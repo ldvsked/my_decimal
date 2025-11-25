@@ -29,10 +29,11 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst){
         scale += 1;
         src_abs *= 10;
     }
-    printf("%d\n", (int)src_abs);
-    printf("%d\n", scale);
+    // printf("%d\n", (int)src_abs);
+    // printf("%d\n", scale);
   
     if (!flag){
+        // максимум у флота 3.4e38
         unsigned long long int_value = (unsigned long long)src_abs;
 
         dst -> bits[0] = (unsigned int) int_value;
