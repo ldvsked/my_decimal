@@ -1,7 +1,7 @@
 #include "s21_decimal.h"
 #include <math.h>
 #include <stdio.h>
-#include<stdio.h>
+#include <stdlib.h>
 
 int s21_from_float_to_decimal(float src, s21_decimal *dst){
     int flag = 0;
