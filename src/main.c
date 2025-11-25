@@ -19,11 +19,21 @@ void print_decimal_binary(s21_decimal number) {
 
 int main(){
 
-    int test;
-    scanf("%d", &test);
-    s21_decimal numder;
-    s21_from_int_to_decimal(test, &numder);
-    print_decimal_binary(numder);
+    // int test;
+    // scanf("%d", &test);
+    // s21_decimal number;
+    // s21_from_int_to_decimal(test, &number);
+    // print_decimal_binary(number);
+
+    // int output_int;
+    // s21_from_decimal_to_int(number, &output_int);
+    // printf("%d", output_int);
+
+    float input_fl;
+    scanf("%f", &input_fl);
+    s21_decimal number_dec;
+    s21_from_float_to_decimal(input_fl, &number_dec);
+    print_decimal_binary(number_dec);
 
     return 0;
 }
