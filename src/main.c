@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "s21_decimal.h"
 #include "comparison_operators.h"
 
 int main(){
