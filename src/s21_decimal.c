@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "s21_decimal.h"
+#include "help_func.h"
 
 void print_binary(int num) {
     for (int i = 31; i >= 0; i--) {
@@ -39,24 +40,11 @@ int get_sign(const s21_decimal ch) {
     return ((ch.bits[3] >> 31) & 1);
 }
 
-// Функция для деления 96-битного числа на 10
-int divide_by_10(unsigned int bits[3]) {
-    unsigned long long remainder = 0;
-    for (int i = 2; i >= 0; i--) {
-        unsigned long long temp = (remainder << 32) | bits[i];
-        bits[i] = temp / 10;
-        remainder = temp % 10;
-    }
-    return (int)remainder;
-}
-
-// Проверка, что все три части равны нулю
 int is_zero(const unsigned int bits[3]) {
     return bits[0] == 0 && bits[1] == 0 && bits[2] == 0;
 }
 
-// Основная функция вывода decimal в десятичном виде
-void print_decimal_normal(const s21_decimal numb) {//Вот эту хуйню я не осилил...
+void print_decimal_normal(const s21_decimal numb) {
     int sign = get_sign(numb);
     int scale = get_degree(numb);
     unsigned int bits[3] = {numb.bits[0], numb.bits[1], numb.bits[2]};
@@ -66,11 +54,9 @@ void print_decimal_normal(const s21_decimal numb) {//Вот эту хуйню я
     }
     if (sign) printf("-");
     
-    // Преобразуем 96-битное число в строку (в обратном порядке)
     char digits[100] = {0};
     int digit_count = 0;
     
-    // Получаем цифры путем деления на 10
     while (!is_zero(bits)) {
         int digit = divide_by_10(bits);
         digits[digit_count++] = '0' + digit;

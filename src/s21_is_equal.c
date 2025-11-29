@@ -1,16 +1,12 @@
 #include "comparison_operators.h"
 
-int s21_is_equal(s21_decimal num_1, s21_decimal num_2){
-    int result=0;
+int s21_is_equal(s21_decimal num1, s21_decimal num2) {
+    s21_decimal n1 = normalize_decimal(num1);
+    s21_decimal n2 = normalize_decimal(num2);
 
-    int sign1 = get_sign(num_1);
-    int sign2 = get_sign(num_2);
-    // int degree1 = get_degree(num_1);
-    // int degree2 = get_degree(num_2);
-
-    if(sign1==sign2){
-
-    }
-
-    return result;
+    return (get_sign(n1) == get_sign(n2)) &&
+           (get_degree(n1) == get_degree(n2)) &&
+           (n1.bits[0] == n2.bits[0]) &&
+           (n1.bits[1] == n2.bits[1]) &&
+           (n1.bits[2] == n2.bits[2]);
 }

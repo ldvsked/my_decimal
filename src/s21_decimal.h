@@ -18,8 +18,6 @@ int get_degree(const s21_decimal ch);
 
 int get_sign(const s21_decimal ch);
 
-int divide_by_10(unsigned int bits[3]);
-
 int is_zero(const unsigned int bits[3]);
 
 void print_decimal_normal(const s21_decimal numb);

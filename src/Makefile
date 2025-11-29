@@ -12,6 +12,7 @@ s21_decimal.a: s21_decimal.o \
                s21_is_greater_or_equal.o \
                s21_is_less_or_equal.o \
                s21_is_less.o \
+               help_func.o\
                s21_is_not_equal.o \
                s21_is_greater.o
 	ar rcs s21_decimal.a $^
