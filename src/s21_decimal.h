@@ -6,6 +6,10 @@ typedef struct
     unsigned int bits[4];
 } s21_decimal;
 
+int get_sign(s21_decimal value);
+void set_sign(s21_decimal *value, int sign);
+int get_scale(s21_decimal value);
+void set_scale(s21_decimal *value, int scale);
 
 int s21_from_int_to_decimal(int src, s21_decimal *dst);
 int s21_from_decimal_to_int(s21_decimal src, int *dst);
