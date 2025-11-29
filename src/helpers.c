@@ -1,5 +1,13 @@
 #include "s21_decimal.h"
 
+void init_decimal(s21_decimal* value) { memset(value, 0, sizeof(s21_decimal)); }
+
+void print_decimal(s21_decimal value) {
+  printf("Sign: %d, Scale: %d, Value: %u %u %u\n", get_sign(value),
+         get_scale(value), (unsigned int)value.bits[2],
+         (unsigned int)value.bits[1], (unsigned int)value.bits[0]);
+}
+
 int get_sign(s21_decimal value) { return (value.bits[3] >> 31) & 1; }
 
 void set_sign(s21_decimal* value, int sign) {
@@ -39,4 +47,14 @@ void normalize_scale(s21_decimal* value_1, s21_decimal* value_2) {
   } else {
     set_scale(value_2, scale1);
   }
+}
+
+int compare_bits(s21_decimal value_1, s21_decimal value_2) {
+  for (int i = 2; i >= 0; i--) {
+    unsigned int a = (unsigned int)value_1.bits[i];
+    unsigned int b = (unsigned int)value_2.bits[i];
+    if (a > b) return 1;
+    if (a < b) return -1;
+  }
+  return 0;
 }
