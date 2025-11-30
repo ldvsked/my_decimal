@@ -26,6 +26,9 @@ gcov_report: clean
 	./test
 	gcovr -r . --html --html-details -o coverage.html
 
+valgrind: all
+	valgrind --tool=memcheck --leak-check=yes  ./test
+
 rebuild: clean all
 
 clean:
