@@ -23,6 +23,7 @@ void normalize_scale(s21_decimal* value_1, s21_decimal* value_2);
 int compare_bits(s21_decimal value_1, s21_decimal value_2);
 int add_bits(s21_decimal* res, s21_decimal v1, s21_decimal v2);
 int sub_bits(s21_decimal* res, s21_decimal v1, s21_decimal v2);
+void set_decimal(s21_decimal* dst, int* bits, int scale, int sign);
 
 int s21_from_int_to_decimal(int src, s21_decimal* dst);
 int s21_from_decimal_to_int(s21_decimal src, int* dst);

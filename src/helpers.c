@@ -86,3 +86,10 @@ int sub_bits(s21_decimal* result, s21_decimal value_1, s21_decimal value_2) {
   }
   return borrow != 0;
 }
+
+void set_decimal(s21_decimal* dst, int* bits, int scale, int sign) {
+  dst->bits[0] = bits[0];
+  dst->bits[1] = bits[1];
+  dst->bits[2] = bits[2];
+  dst->bits[3] = (scale << 16) | (sign << 31);
+}
