@@ -21,8 +21,9 @@ void set_sign(s21_decimal* value, int sign) {
 int get_scale(s21_decimal value) { return (value.bits[3] >> 16) & 0xFF; }
 
 void set_scale(s21_decimal* value, int scale) {
-  value->bits[3] &= 0x80000000;
-  value->bits[3] |= (scale << 16);
+  int sign = get_sign(*value);
+  value->bits[3] = (scale << 16);
+  set_sign(value, sign);
 }
 
 void normalize_scale(s21_decimal* value_1, s21_decimal* value_2) {
@@ -57,4 +58,31 @@ int compare_bits(s21_decimal value_1, s21_decimal value_2) {
     if (a < b) return -1;
   }
   return 0;
+}
+
+int add_bits(s21_decimal* result, s21_decimal value_1, s21_decimal value_2) {
+  unsigned long long carry = 0;
+  for (int i = 0; i < 3; i++) {
+    unsigned long long sum = (unsigned long long)value_1.bits[i] +
+                             (unsigned long long)value_2.bits[i] + carry;
+    result->bits[i] = (int)(sum & 0xFFFFFFFF);
+    carry = sum >> 32;
+  }
+  return carry != 0;
+}
+
+int sub_bits(s21_decimal* result, s21_decimal value_1, s21_decimal value_2) {
+  long long borrow = 0;
+  for (int i = 0; i < 3; i++) {
+    long long diff = (long long)(unsigned int)value_1.bits[i] -
+                     (long long)(unsigned int)value_2.bits[i] - borrow;
+    if (diff < 0) {
+      diff += 0x100000000LL;
+      borrow = 1;
+    } else {
+      borrow = 0;
+    }
+    result->bits[i] = (int)diff;
+  }
+  return borrow != 0;
 }
