@@ -253,6 +253,117 @@ START_TEST(test_21_sub_max_min) {
 }
 END_TEST
 
+START_TEST(test_s21_mul_positive_numbers) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(10, &val1);
+  s21_from_int_to_decimal(5, &val2);
+
+  // 10 * 5 = 50
+  int status = s21_mul(val1, val2, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 50);
+  ck_assert_int_eq(get_sign(result), 0);
+  ck_assert_int_eq(get_scale(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_mul_negative_positive) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(-10, &val1);
+  s21_from_int_to_decimal(5, &val2);
+
+  // -10 * 5 = -50
+  int status = s21_mul(val1, val2, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 50);
+  ck_assert_int_eq(get_sign(result), 1);
+  ck_assert_int_eq(get_scale(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_mul_two_negatives) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(-10, &val1);
+  s21_from_int_to_decimal(-20, &val2);
+
+  // -10 * -20 = 200
+  int status = s21_mul(val1, val2, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 200);
+  ck_assert_int_eq(get_sign(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_mul_by_zero) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(100, &val1);
+  s21_from_int_to_decimal(0, &val2);
+
+  // 100 * 0 = 0
+  int status = s21_mul(val1, val2, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 0);
+  ck_assert_int_eq(result.bits[1], 0);
+  ck_assert_int_eq(result.bits[2], 0);
+}
+END_TEST
+
+START_TEST(test_s21_mul_with_scale) {
+  s21_decimal val1, val2, result;
+  //  2.5
+  s21_from_int_to_decimal(25, &val1);
+  set_scale(&val1, 1);
+
+  // 0.2
+  s21_from_int_to_decimal(2, &val2);
+  set_scale(&val2, 1);
+
+  // 2.5 * 0.2 = 0.5
+  int status = s21_mul(val1, val2, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 50);
+  ck_assert_int_eq(get_scale(result), 2);
+  ck_assert_int_eq(get_sign(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_mul_big_numbers) {
+  s21_decimal val1, val2, result;
+  init_decimal(&val1);
+  init_decimal(&val2);
+
+  val1.bits[0] = 0xFFFFFFFF;
+  val2.bits[0] = 2;
+
+  // (2^32 - 1) * 2 = 2^33 - 2
+  int status = s21_mul(val1, val2, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 0xFFFFFFFE);
+  ck_assert_int_eq(result.bits[1], 1);
+}
+END_TEST
+
+START_TEST(test_s21_mul_overflow) {
+  s21_decimal val1, val2, result;
+  init_decimal(&val1);
+  init_decimal(&val2);
+
+  // переполнение
+  val1.bits[2] = 0xFFFFFFFF;
+  val2.bits[0] = 2;
+
+  int status = s21_mul(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_TOO_LARGE);
+}
+END_TEST
+
 TCase *create_arithmetic_tcase(void) {
   TCase *tc = tcase_create("arithmetic");
   tcase_add_test(tc, test_s21_add_positive_numbers);
@@ -275,6 +386,14 @@ TCase *create_arithmetic_tcase(void) {
   tcase_add_test(tc, test_21_sub_min_min);
   tcase_add_test(tc, test_21_sub_max_max);
   tcase_add_test(tc, test_21_sub_max_min);
+
+  tcase_add_test(tc, test_s21_mul_positive_numbers);
+  tcase_add_test(tc, test_s21_mul_negative_positive);
+  tcase_add_test(tc, test_s21_mul_two_negatives);
+  tcase_add_test(tc, test_s21_mul_by_zero);
+  tcase_add_test(tc, test_s21_mul_with_scale);
+  tcase_add_test(tc, test_s21_mul_big_numbers);
+  tcase_add_test(tc, test_s21_mul_overflow);
 
   // tcase_add_test(tc, );
   // tcase_add_test(tc, );

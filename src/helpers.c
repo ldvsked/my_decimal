@@ -1,6 +1,6 @@
 #include "s21_decimal.h"
 
-void init_decimal(s21_decimal* value) { memset(value, 0, sizeof(s21_decimal)); }
+void init_decimal(s21_decimal *value) { memset(value, 0, sizeof(s21_decimal)); }
 
 void print_decimal(s21_decimal value) {
   printf("Sign: %d, Scale: %d, Value: %u %u %u\n", get_sign(value),
@@ -10,7 +10,7 @@ void print_decimal(s21_decimal value) {
 
 int get_sign(s21_decimal value) { return (value.bits[3] >> 31) & 1; }
 
-void set_sign(s21_decimal* value, int sign) {
+void set_sign(s21_decimal *value, int sign) {
   if (sign) {
     value->bits[3] |= (1 << 31);
   } else {
@@ -20,18 +20,18 @@ void set_sign(s21_decimal* value, int sign) {
 
 int get_scale(s21_decimal value) { return (value.bits[3] >> 16) & 0xFF; }
 
-void set_scale(s21_decimal* value, int scale) {
+void set_scale(s21_decimal *value, int scale) {
   int sign = get_sign(*value);
   value->bits[3] = (scale << 16);
   set_sign(value, sign);
 }
 
-void normalize_scale(s21_decimal* value_1, s21_decimal* value_2) {
+void normalize_scale(s21_decimal *value_1, s21_decimal *value_2) {
   int scale1 = get_scale(*value_1);
   int scale2 = get_scale(*value_2);
   if (scale1 == scale2) return;
   // приводим к большей степени умножением на 10
-  s21_decimal* smaller_scale = (scale1 < scale2) ? value_1 : value_2;
+  s21_decimal *smaller_scale = (scale1 < scale2) ? value_1 : value_2;
   int diff = (scale1 < scale2) ? (scale2 - scale1) : (scale1 - scale2);
   for (int i = 0; i < diff; i++) {
     unsigned long long carry = 0;
@@ -60,7 +60,7 @@ int compare_bits(s21_decimal value_1, s21_decimal value_2) {
   return 0;
 }
 
-int add_bits(s21_decimal* result, s21_decimal value_1, s21_decimal value_2) {
+int add_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
   unsigned long long carry = 0;
   for (int i = 0; i < 3; i++) {
     unsigned long long sum = (unsigned long long)value_1.bits[i] +
@@ -71,7 +71,7 @@ int add_bits(s21_decimal* result, s21_decimal value_1, s21_decimal value_2) {
   return carry != 0;
 }
 
-int sub_bits(s21_decimal* result, s21_decimal value_1, s21_decimal value_2) {
+int sub_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
   long long borrow = 0;
   for (int i = 0; i < 3; i++) {
     long long diff = (long long)(unsigned int)value_1.bits[i] -
@@ -87,9 +87,27 @@ int sub_bits(s21_decimal* result, s21_decimal value_1, s21_decimal value_2) {
   return borrow != 0;
 }
 
-void set_decimal(s21_decimal* dst, int* bits, int scale, int sign) {
+void set_decimal(s21_decimal *dst, int *bits, int scale, int sign) {
   dst->bits[0] = bits[0];
   dst->bits[1] = bits[1];
   dst->bits[2] = bits[2];
   dst->bits[3] = (scale << 16) | (sign << 31);
+}
+
+int get_bit(s21_decimal value, int index) {
+  int array_index = index / 32;
+  int bit_index = index % 32;
+  return (value.bits[array_index] >> bit_index) & 1;
+}
+
+// сдвигаем мантиссу влево на 1 бит
+int shift_left(s21_decimal *value) {
+  int carry = 0;
+  for (int i = 0; i < 3; i++) {
+    unsigned long long temp = (unsigned long long)value->bits[i] << 1;
+    temp += carry;
+    value->bits[i] = (unsigned int)(temp & 0xFFFFFFFF);
+    carry = (temp >> 32) > 0;
+  }
+  return carry;
 }
