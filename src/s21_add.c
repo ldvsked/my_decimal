@@ -1,9 +1,8 @@
 #include "s21_decimal.h"
 
-
-int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result) {
+int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   if (result == NULL) {
-      return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
+    return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
   }
   return_code rc = S21_OK;
   init_decimal(result);
