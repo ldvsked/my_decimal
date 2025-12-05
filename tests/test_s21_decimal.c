@@ -55,7 +55,7 @@ START_TEST(test_s21_add_with_scale) {
 
   ck_assert_int_eq(status, 0);
   ck_assert_int_eq(result.bits[0], 158);
-  ck_assert_int_eq(get_scale(result), 0);
+  ck_assert_int_eq(get_scale(result), 1);
 }
 END_TEST
 
@@ -143,7 +143,7 @@ START_TEST(test_s21_sub_positive_numbers) {
   int status = s21_sub(val1, val2, &result);
 
   ck_assert_int_eq(status, 0);
-  ck_assert_int_eq(result.bits[0], 150);
+  ck_assert_int_eq(result.bits[0], 50);
   ck_assert_int_eq(get_sign(result), 0);
 }
 END_TEST
@@ -152,7 +152,6 @@ START_TEST(test_s21_sub_negative_numbers) {
   s21_decimal val1, val2, result;
   s21_from_int_to_decimal(-100, &val1);
   s21_from_int_to_decimal(-50, &val2);
-  s21_decimal result;
 
   int status = s21_sub(val1, val2, &result);
 
@@ -183,12 +182,11 @@ START_TEST(test_s21_sub_with_scale) {
   set_scale(&val2, 1);
 
   int status = s21_sub(val1, val2, &result);
-
   ck_assert_int_eq(status, 0);
   ck_assert_int_eq(result.bits[0], 100);
   ck_assert_int_eq(get_scale(result), 1);
-  ck_assert_int_eq(result.bits[0], 10);
-  ck_assert_int_eq(get_scale(result), 0);
+  // ck_assert_int_eq(result.bits[0], 10);
+  // ck_assert_int_eq(get_scale(result), 0);
 }
 END_TEST
 
@@ -210,7 +208,7 @@ START_TEST(test_21_sub_min_max) {
   s21_decimal min_dec = {{-1, -1, -1, 0x80000000}};
   s21_decimal result;
 
-  int status = s21_sub(max_dec, min_dec, &result);
+  int status = s21_sub(min_dec, max_dec, &result);
 
   ck_assert_int_eq(status, 2);
 }
@@ -268,7 +266,7 @@ TCase *create_arithmetic_tcase(void) {
   tcase_add_test(tc, test_21_add_max_max);
   tcase_add_test(tc, test_21_add_max_min);
 
-  tcase_ass_test(tc, test_s21_sub_positive_numbers);
+  tcase_add_test(tc, test_s21_sub_positive_numbers);
   tcase_add_test(tc, test_s21_sub_negative_numbers);
   tcase_add_test(tc, test_s21_sub_mixed_signs);
   tcase_add_test(tc, test_s21_sub_with_scale);
