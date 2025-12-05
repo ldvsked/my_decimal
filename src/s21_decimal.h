@@ -18,8 +18,8 @@ typedef enum return_code {
 
 
 // arithmetic
-return_code s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
-return_code s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
+int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
+int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
 
 // helpers
 void init_decimal(s21_decimal* value);
