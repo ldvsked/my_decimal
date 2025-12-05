@@ -8,9 +8,18 @@ typedef struct {
   unsigned int bits[4];
 } s21_decimal;
 
+typedef enum return_code {
+  S21_OK = 0,
+  S21_TOO_LARGE = 1,
+  S21_TOO_SMALL = 2,
+  S21_DIV_BY_ZERO = 3,
+  S21_DEREFERENCING_NULL_POINTER_ATTEMPT = 4
+} return_code;
+
+
 // arithmetic
-int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
-int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
+return_code s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
+return_code s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal* result);
 
 // helpers
 void init_decimal(s21_decimal* value);

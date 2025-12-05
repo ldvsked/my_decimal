@@ -1,15 +1,11 @@
 #include "s21_decimal.h"
 
-#define S21_OK 0
-#define S21_TOO_LARGE 1
-#define S21_TOO_SMALL 2
-#define S21_DIV_BY_ZERO 3
 
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result) {
-  // if (result == NULL) {
-  //     return 0;
-  // }
-  int err = 0;
+  if (result == NULL) {
+      return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
+  }
+  return_code rc = S21_OK;
   init_decimal(result);
   int sign1 = get_sign(value_1);
   int sign2 = get_sign(value_2);
@@ -34,11 +30,11 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal* result) {
 
   if (overflow) {
     if (get_sign(*result) == 0) {
-      err = 1;
+      rc = S21_TOO_LARGE;
     } else {
-      err = 2;
+      rc = S21_TOO_SMALL;
     }
   }
 
-  return err;
+  return rc;
 }
