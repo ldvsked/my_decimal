@@ -46,9 +46,21 @@ void div_integer_mantissa(s21_decimal dividend, s21_decimal divisor,
                           s21_decimal *quotient, s21_decimal *remainder);
 int mul_by_10(s21_decimal *value);
 
+// convertors
 int s21_from_int_to_decimal(int src, s21_decimal *dst);
 int s21_from_decimal_to_int(s21_decimal src, int *dst);
 int s21_from_float_to_decimal(float src, s21_decimal *dst);
 int s21_from_decimal_to_float(s21_decimal src, float *dst);
+
+// comparisons
+void print_binary(int num);
+void print_decimal_binary(s21_decimal number);
+void set_degree(s21_decimal* ch, int exp);
+void set_sign(s21_decimal* ch, const int sign);
+int get_degree(const s21_decimal ch);
+int get_sign(const s21_decimal ch);
+int is_zero(const unsigned int bits[3]);
+void print_decimal_normal(const s21_decimal numb);
+
 
 #endif  // s21_decimal_h
