@@ -1,8 +1,10 @@
 #include "s21_decimal.h"
 
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-  if (!result) return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
-  if (is_zero(value_2)) return S21_DIV_BY_ZERO;
+  if (!result)
+    return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
+  if (is_full_value_zero(value_2))
+    return S21_DIV_BY_ZERO;
 
   init_decimal(result);
 
@@ -27,14 +29,15 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
 
   // если делитель был меньше делимого по степени
   while (res_scale < 0) {
-    if (mul_by_10(&temp_res)) return S21_TOO_LARGE;
+    if (mul_by_10(&temp_res))
+      return S21_TOO_LARGE;
     res_scale++;
   }
 
-  while (!is_zero(remainder) && res_scale < 28) {
+  while (!is_full_value_zero(remainder) && res_scale < 28) {
     s21_decimal next_val = temp_res;
     if (mul_by_10(&next_val))
-      break;  // в любом случае не сможем записать мантиссу
+      break; // в любом случае не сможем записать мантиссу
 
     s21_decimal rem_x10 = remainder;
     mul_by_10(&rem_x10);

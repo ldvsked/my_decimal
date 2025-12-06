@@ -1,7 +1,8 @@
 #include "s21_decimal.h"
 
 int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-  if (!result) return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
+  if (!result)
+    return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
 
   init_decimal(result);
   int sign1 = get_sign(value_1);
@@ -43,10 +44,12 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
       // это бы уже не прокнуло
       int has_more_bits = 0;
       for (int k = i + 1; k < 96; k++) {
-        if (get_bit(value_2, k)) has_more_bits = 1;
+        if (get_bit(value_2, k))
+          has_more_bits = 1;
       }
 
-      if (has_more_bits) overflow = 1;
+      if (has_more_bits)
+        overflow = 1;
     }
   }
 
