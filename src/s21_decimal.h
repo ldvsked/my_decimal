@@ -34,8 +34,13 @@ int compare_bits(s21_decimal value_1, s21_decimal value_2);
 int add_bits(s21_decimal *res, s21_decimal v1, s21_decimal v2);
 int sub_bits(s21_decimal *res, s21_decimal v1, s21_decimal v2);
 void set_decimal(s21_decimal *dst, int *bits, int scale, int sign);
+
 int get_bit(s21_decimal value, int index);
 int shift_left(s21_decimal *value);
+int is_zero(s21_decimal value);
+void div_integer_mantissa(s21_decimal dividend, s21_decimal divisor,
+                          s21_decimal *quotient, s21_decimal *remainder);
+int mul_by_10(s21_decimal *value);
 
 int s21_from_int_to_decimal(int src, s21_decimal *dst);
 int s21_from_decimal_to_int(s21_decimal src, int *dst);

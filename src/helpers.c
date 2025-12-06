@@ -111,3 +111,49 @@ int shift_left(s21_decimal *value) {
   }
   return carry;
 }
+
+int is_zero(s21_decimal value) {
+  return value.bits[0] == 0 && value.bits[1] == 0 && value.bits[2] == 0;
+}
+
+void div_integer_mantissa(s21_decimal dividend, s21_decimal divisor,
+                          s21_decimal *quotient, s21_decimal *remainder) {
+  init_decimal(quotient);
+  init_decimal(remainder);
+
+  for (int i = 95; i >= 0; i--) {
+    shift_left(remainder);
+
+    if (get_bit(dividend, i)) {
+      remainder->bits[0] |= 1;
+    }
+
+    if (compare_bits(*remainder, divisor) >= 0) {
+      sub_bits(remainder, *remainder, divisor);
+      int q_index = i / 32;
+      int q_bit = i % 32;
+      quotient->bits[q_index] |= (1 << q_bit);
+    }
+  }
+}
+
+int mul_by_10(s21_decimal *value) {
+  s21_decimal temp = *value;
+
+  // x * 10 = (x * 8) + (x * 2) = (x << 3) + (x << 1)
+  s21_decimal ten;
+  init_decimal(&ten);
+  ten.bits[0] = 10;
+  return_code rc = S21_OK;
+  s21_decimal x2 = temp;
+  if (shift_left(&x2)) rc = S21_TOO_LARGE;
+
+  s21_decimal x8 = x2;
+  if (rc == S21_OK && shift_left(&x8)) rc = S21_TOO_LARGE;
+  if (rc == S21_OK && shift_left(&x8)) rc = S21_TOO_LARGE;
+
+  if (rc == S21_OK && add_bits(value, x2, x8))
+    rc = S21_TOO_LARGE;  // x10 = x2 + x8
+
+  return rc;
+}

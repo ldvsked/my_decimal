@@ -354,13 +354,92 @@ START_TEST(test_s21_mul_overflow) {
   init_decimal(&val1);
   init_decimal(&val2);
 
-  // переполнение
   val1.bits[2] = 0xFFFFFFFF;
   val2.bits[0] = 2;
 
   int status = s21_mul(val1, val2, &result);
 
   ck_assert_int_eq(status, S21_TOO_LARGE);
+}
+END_TEST
+
+START_TEST(test_s21_div_simple) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(10, &val1);
+  s21_from_int_to_decimal(2, &val2);
+
+  int status = s21_div(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_eq(result.bits[0], 5);
+  ck_assert_int_eq(get_scale(result), 0);
+  ck_assert_int_eq(get_sign(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_div_fractional) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(5, &val1);
+  s21_from_int_to_decimal(2, &val2);
+
+  int status = s21_div(val1, val2, &result);
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_eq(result.bits[0], 25);
+  ck_assert_int_eq(get_scale(result), 1);
+  ck_assert_int_eq(get_sign(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_div_negative) {
+  s21_decimal val1, val2, result;
+  // -10 / 2 = -5
+  s21_from_int_to_decimal(-10, &val1);
+  s21_from_int_to_decimal(2, &val2);
+
+  int status = s21_div(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_eq(result.bits[0], 5);
+  ck_assert_int_eq(get_scale(result), 0);
+  ck_assert_int_eq(get_sign(result), 1);
+}
+END_TEST
+
+START_TEST(test_s21_div_by_zero) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(10, &val1);
+  s21_from_int_to_decimal(0, &val2);
+
+  int status = s21_div(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_DIV_BY_ZERO);
+}
+END_TEST
+
+START_TEST(test_s21_div_small_result) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(1, &val1);
+  s21_from_int_to_decimal(4, &val2);
+
+  int status = s21_div(val1, val2, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 25);
+  ck_assert_int_eq(get_scale(result), 2);
+}
+END_TEST
+
+START_TEST(test_s21_div_complex) {
+  s21_decimal val1, val2, result;
+  // 1 / 3 = 0.333333...
+  // функция должна остановиться на scale 28 или переполнении мантиссы
+  s21_from_int_to_decimal(1, &val1);
+  s21_from_int_to_decimal(3, &val2);
+
+  int status = s21_div(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_ge(get_scale(result), 1);
 }
 END_TEST
 
@@ -394,6 +473,13 @@ TCase *create_arithmetic_tcase(void) {
   tcase_add_test(tc, test_s21_mul_with_scale);
   tcase_add_test(tc, test_s21_mul_big_numbers);
   tcase_add_test(tc, test_s21_mul_overflow);
+
+  tcase_add_test(tc, test_s21_div_simple);
+  tcase_add_test(tc, test_s21_div_fractional);
+  tcase_add_test(tc, test_s21_div_negative);
+  tcase_add_test(tc, test_s21_div_by_zero);
+  tcase_add_test(tc, test_s21_div_small_result);
+  tcase_add_test(tc, test_s21_div_complex);
 
   // tcase_add_test(tc, );
   // tcase_add_test(tc, );
