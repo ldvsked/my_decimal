@@ -15,6 +15,7 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   s21_decimal temp_result;
   init_decimal(&temp_result);
 
+  return_code rc = S21_OK;
   int overflow = 0;
 
   for (int i = 0; i < 96; i++) {
@@ -50,16 +51,16 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   }
 
   if (result_scale > 28) {
-    return S21_TOO_LARGE;
+    rc = S21_TOO_LARGE;
   }
 
-  if (overflow) {
-    return result_sign ? S21_TOO_SMALL : S21_TOO_LARGE;
+  if (rc == S21_OK && overflow) {
+    rc = result_sign ? S21_TOO_SMALL : S21_TOO_LARGE;
   }
 
   *result = temp_result;
   set_scale(result, result_scale);
   set_sign(result, result_sign);
 
-  return S21_OK;
+  return rc;
 }
