@@ -22,6 +22,10 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 
+// other functions
+int s21_truncate(s21_decimal value, s21_decimal *result);
+int s21_negate(s21_decimal value, s21_decimal *result);
+
 // helpers
 void init_decimal(s21_decimal *value);
 void print_decimal(s21_decimal value);
