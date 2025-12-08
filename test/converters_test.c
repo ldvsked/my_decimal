@@ -127,6 +127,27 @@ END_TEST
 
 // from_decimal_to_int
 
+START_TEST(test_s21_decimal_converters_decimal_to_int_case12) {
+  s21_decimal input_dec = {
+    .bits = {
+        0xFFFFFFFF,  // bits[0] — младшая часть мантиссы
+        0xFFFFFFFF,  // bits[1] — средняя часть мантиссы
+        0xFFFFFFFF,  // bits[2] — старшая часть мантиссы
+        0x801C0000   // bits[3] — знак + scale
+    }
+  };
+
+  int expected_int = -7;
+  int my_int;
+
+  int result = s21_from_decimal_to_int(input_dec, &my_int);
+
+  ck_assert_int_eq(0, result);            // функция должна вернуть 0
+  ck_assert_int_eq(expected_int, my_int); // dst = -7
+}
+END_TEST
+
+
 START_TEST(test_s21_decimal_converters_decimal_to_int_normal) {
   s21_decimal input_dec = {.bits = {1234, 0, 0, 0}};
   int expected_int = 1234;
@@ -517,6 +538,8 @@ Suite* test_s21_decimal_converters_suite(void) {
                  test_s21_decimal_converters_decimal_to_int_scale_negative);
   tcase_add_test(tc_dec_to_int,
                  test_s21_decimal_converters_decimal_to_int_zero_scale);
+  tcase_add_test(tc_dec_to_int, test_s21_decimal_converters_decimal_to_int_case12);
+  
 
   TCase* tc_float_to_dec = tcase_create("from_float_to_dec");
   tcase_add_test(tc_float_to_dec,
