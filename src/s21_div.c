@@ -49,6 +49,28 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     res_scale++;
   }
 
+  s21_decimal difference;
+  sub_bits(&difference, man2, remainder);
+
+  int needs_rounding = 0;
+
+  if (is_greater(remainder, difference)) {
+    needs_rounding = 1;
+  }
+  // если remainder == difference, то дробь == 0.5, банковское округление
+  else if (is_equal(remainder, difference)) {
+    if (get_bit(temp_res, 0)) {
+      needs_rounding = 1;
+    }
+  }
+
+  if (needs_rounding) {
+    s21_decimal one = {{1, 0, 0, 0}};
+    if (add_bits(&temp_res, temp_res, one)) {
+      return res_sign == 0 ? S21_TOO_LARGE : S21_TOO_SMALL;
+    }
+  }
+
   set_scale(&temp_res, res_scale);
   set_sign(&temp_res, res_sign);
   *result = temp_res;

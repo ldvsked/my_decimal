@@ -157,3 +157,91 @@ int mul_by_10(s21_decimal *value) {
 
   return rc;
 }
+
+int get_bit_big(s21_big_decimal dst, int index) {
+  int byte_index = index / 32;
+  int bit_index = index % 32;
+  return (dst.bits[byte_index] & (1U << bit_index)) != 0;
+}
+
+void add_big(s21_big_decimal value_1, s21_big_decimal value_2,
+             s21_big_decimal *result) {
+  unsigned long long carry = 0;
+  for (int i = 0; i < 7; i++) {
+    unsigned long long sum = (unsigned long long)value_1.bits[i] +
+                             (unsigned long long)value_2.bits[i] + carry;
+    result->bits[i] = (unsigned int)(sum & 0xFFFFFFFF);
+    carry = sum >> 32;
+  }
+}
+
+void shift_left_big(s21_big_decimal *dst, int shift) {
+  if (shift == 0) return;
+  int words_shift = shift / 32;
+  int bits_shift = shift % 32;
+
+  if (words_shift > 0) {
+    for (int i = 6; i >= words_shift; i--) {
+      dst->bits[i] = dst->bits[i - words_shift];
+    }
+    for (int i = 0; i < words_shift; i++) {
+      dst->bits[i] = 0;
+    }
+  }
+
+  if (bits_shift > 0) {
+    unsigned int carry = 0;
+    for (int i = 0; i < 7; i++) {
+      unsigned long long temp =
+          ((unsigned long long)dst->bits[i] << bits_shift) | carry;
+      dst->bits[i] = (unsigned int)(temp & 0xFFFFFFFF);
+      carry = (unsigned int)(temp >> 32);
+    }
+  }
+}
+
+// результат может занимать до 192 бит
+s21_big_decimal mul_mantissa(s21_decimal value_1, s21_decimal value_2) {
+  s21_big_decimal res = {0};
+  s21_big_decimal v1 = {0};
+
+  for (int i = 0; i < 3; i++) v1.bits[i] = value_1.bits[i];
+
+  for (int i = 0; i < 96; i++) {
+    if (get_bit(value_2, i)) {
+      s21_big_decimal temp = v1;
+      shift_left_big(&temp, i);
+      add_big(res, temp, &res);
+    }
+  }
+  return res;
+}
+
+int div_by_10_big(s21_big_decimal *value) {
+  unsigned long long remainder = 0;
+  for (int i = 6; i >= 0; i--) {
+    unsigned long long current = value->bits[i] + (remainder << 32);
+    value->bits[i] = (unsigned int)(current / 10);
+    remainder = current % 10;
+  }
+  return (int)remainder;
+}
+
+int is_overflow_big(s21_big_decimal value) {
+  return (value.bits[3] | value.bits[4] | value.bits[5] | value.bits[6]) != 0;
+}
+
+void add_one_big(s21_big_decimal *value) {
+  unsigned long long carry = 1;
+  for (int i = 0; i < 7 && carry; i++) {
+    unsigned long long sum = (unsigned long long)value->bits[i] + carry;
+    value->bits[i] = (unsigned int)(sum & 0xFFFFFFFF);
+    carry = sum >> 32;
+  }
+}
+
+void bank_rounding(s21_big_decimal *value, int remainder) {
+  if (remainder > 5 || (remainder == 5 && (value->bits[0] & 1))) {
+    add_one_big(value);
+  }
+}
