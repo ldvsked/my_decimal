@@ -1,11 +1,7 @@
-#include <limits.h>
-#include <math.h>
-#include <stdlib.h>
-
 #include "s21_decimal.h"
 
 int s21_from_int_to_decimal(int src, s21_decimal *dst) {
-  int sign = !(src >= 0);  // 1 - если отрицательный
+  int sign = !(src >= 0); // 1 - если отрицательный
 
   unsigned int src_abs;
   if (src == INT_MIN) {

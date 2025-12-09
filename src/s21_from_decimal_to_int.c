@@ -1,5 +1,3 @@
-#include <math.h>
-
 #include "s21_decimal.h"
 
 int s21_from_decimal_to_int(s21_decimal src, int *dst) {
@@ -12,7 +10,7 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst) {
 
   int pow_10 =
       (src.bits[3] << 1) >>
-      17;  // ну по идее убрали на всякий случай знаковый бит и сдвинули обратно
+      17; // ну по идее убрали на всякий случай знаковый бит и сдвинули обратно
   long long abs = src.bits[0] / pow(10, pow_10);
   int sign = pow(-1, (src.bits[3] >> 31) & 1);
 
