@@ -5,7 +5,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
   dst->bits[0] = dst->bits[1] = dst->bits[2] = dst->bits[3] = 0;
 
   int sign = (src < 0);
-  float src_abs = fabsf(src); // для большей точности
+  float src_abs = fabsf(src);  // для большей точности
 
   if (src_abs > 0 && src_abs < 1e-28) {
     flag = 1;
@@ -17,7 +17,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
 
   if (!flag) {
     char buffer[256];
-    sprintf(buffer, "%.7g", src_abs); // вот это до 7 знаков округляет
+    sprintf(buffer, "%.7g", src_abs);  // вот это до 7 знаков округляет
     src_abs = atof(buffer);
   }
 

@@ -95,4 +95,4 @@ int multiply_by_10(unsigned int value[3]);
 int align_decimal_scales(s21_decimal value_1, s21_decimal value_2,
                          s21_decimal *out_1, s21_decimal *out_2);
 
-#endif // s21_decimal_h
+#endif  // s21_decimal_h

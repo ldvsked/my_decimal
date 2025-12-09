@@ -29,8 +29,7 @@ void set_scale(s21_decimal *value, int scale) {
 void normalize_scale(s21_decimal *value_1, s21_decimal *value_2) {
   int scale1 = get_scale(*value_1);
   int scale2 = get_scale(*value_2);
-  if (scale1 == scale2)
-    return;
+  if (scale1 == scale2) return;
   // приводим к большей степени умножением на 10
   s21_decimal *smaller_scale = (scale1 < scale2) ? value_1 : value_2;
   int diff = (scale1 < scale2) ? (scale2 - scale1) : (scale1 - scale2);
@@ -55,10 +54,8 @@ int compare_bits(s21_decimal value_1, s21_decimal value_2) {
   for (int i = 2; i >= 0; i--) {
     unsigned int a = (unsigned int)value_1.bits[i];
     unsigned int b = (unsigned int)value_2.bits[i];
-    if (a > b)
-      return 1;
-    if (a < b)
-      return -1;
+    if (a > b) return 1;
+    if (a < b) return -1;
   }
   return 0;
 }
@@ -149,17 +146,14 @@ int mul_by_10(s21_decimal *value) {
   ten.bits[0] = 10;
   return_code rc = S21_OK;
   s21_decimal x2 = temp;
-  if (shift_left(&x2))
-    rc = S21_TOO_LARGE;
+  if (shift_left(&x2)) rc = S21_TOO_LARGE;
 
   s21_decimal x8 = x2;
-  if (rc == S21_OK && shift_left(&x8))
-    rc = S21_TOO_LARGE;
-  if (rc == S21_OK && shift_left(&x8))
-    rc = S21_TOO_LARGE;
+  if (rc == S21_OK && shift_left(&x8)) rc = S21_TOO_LARGE;
+  if (rc == S21_OK && shift_left(&x8)) rc = S21_TOO_LARGE;
 
   if (rc == S21_OK && add_bits(value, x2, x8))
-    rc = S21_TOO_LARGE; // x10 = x2 + x8
+    rc = S21_TOO_LARGE;  // x10 = x2 + x8
 
   return rc;
 }

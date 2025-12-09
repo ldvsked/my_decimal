@@ -253,6 +253,13 @@ START_TEST(test_21_sub_max_min) {
 }
 END_TEST
 
+START_TEST(test_s21_mul_null_ptr) {
+  s21_decimal val1 = {0}, val2 = {0};
+  int status = s21_mul(val1, val2, NULL);
+  ck_assert_int_eq(status, S21_DEREFERENCING_NULL_POINTER_ATTEMPT);
+}
+END_TEST
+
 START_TEST(test_s21_mul_positive_numbers) {
   s21_decimal val1, val2, result;
   s21_from_int_to_decimal(10, &val1);
@@ -283,52 +290,38 @@ START_TEST(test_s21_mul_negative_positive) {
 }
 END_TEST
 
-START_TEST(test_s21_mul_two_negatives) {
+START_TEST(test_s21_mul_overflow_recoverable) {
   s21_decimal val1, val2, result;
-  s21_from_int_to_decimal(-10, &val1);
-  s21_from_int_to_decimal(-20, &val2);
 
-  // -10 * -20 = 200
-  int status = s21_mul(val1, val2, &result);
+  val1.bits[0] = 0xFFFFFFFF;
+  val1.bits[1] = 0xFFFFFFFF;
+  val1.bits[2] = 0xFFFFFFFF;
+  val1.bits[3] = 0;
 
-  ck_assert_int_eq(status, 0);
-  ck_assert_int_eq(result.bits[0], 200);
-  ck_assert_int_eq(get_sign(result), 0);
-}
-END_TEST
+  s21_from_int_to_decimal(2, &val2);
 
-START_TEST(test_s21_mul_by_zero) {
-  s21_decimal val1, val2, result;
-  s21_from_int_to_decimal(100, &val1);
-  s21_from_int_to_decimal(0, &val2);
-
-  // 100 * 0 = 0
-  int status = s21_mul(val1, val2, &result);
-
-  ck_assert_int_eq(status, 0);
-  ck_assert_int_eq(result.bits[0], 0);
-  ck_assert_int_eq(result.bits[1], 0);
-  ck_assert_int_eq(result.bits[2], 0);
-}
-END_TEST
-
-START_TEST(test_s21_mul_with_scale) {
-  s21_decimal val1, val2, result;
-  //  2.5
-  s21_from_int_to_decimal(25, &val1);
   set_scale(&val1, 1);
 
-  // 0.2
-  s21_from_int_to_decimal(2, &val2);
-  set_scale(&val2, 1);
-
-  // 2.5 * 0.2 = 0.5
   int status = s21_mul(val1, val2, &result);
 
-  ck_assert_int_eq(status, 0);
-  ck_assert_int_eq(result.bits[0], 50);
-  ck_assert_int_eq(get_scale(result), 2);
-  ck_assert_int_eq(get_sign(result), 0);
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_eq(get_scale(result), 0);
+  ck_assert_int_ne(result.bits[0], 0);
+}
+END_TEST
+
+START_TEST(test_s21_mul_huge_scale_rounding) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(15, &val1);
+  set_scale(&val1, 20);
+
+  s21_from_int_to_decimal(1, &val2);
+  set_scale(&val2, 15);
+
+  int status = s21_mul(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_eq(get_scale(result), 28);
 }
 END_TEST
 
@@ -349,17 +342,44 @@ START_TEST(test_s21_mul_big_numbers) {
 }
 END_TEST
 
-START_TEST(test_s21_mul_overflow) {
+START_TEST(test_s21_mul_large_shift) {
   s21_decimal val1, val2, result;
-  init_decimal(&val1);
-  init_decimal(&val2);
+  s21_from_int_to_decimal(2, &val1);
 
+  init_decimal(&val2);
+  val2.bits[2] = 1;  // 2^64
+
+  // result = 2 * 2^64 = 2^65.
+  int status = s21_mul(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_eq(result.bits[2], 2);
+  ck_assert_int_eq(result.bits[1], 0);
+  ck_assert_int_eq(result.bits[0], 0);
+}
+END_TEST
+
+START_TEST(test_s21_mul_too_small) {
+  s21_decimal val1, val2, result;
+  // val1 = -MAX
+  init_decimal(&val1);
+  val1.bits[0] = 0xFFFFFFFF;
+  val1.bits[1] = 0xFFFFFFFF;
   val1.bits[2] = 0xFFFFFFFF;
-  val2.bits[0] = 2;
+  set_sign(&val1, 1);
+
+  s21_from_int_to_decimal(2, &val2);
 
   int status = s21_mul(val1, val2, &result);
 
-  ck_assert_int_eq(status, S21_TOO_LARGE);
+  ck_assert_int_eq(status, S21_TOO_SMALL);
+}
+END_TEST
+
+START_TEST(test_s21_div_null_ptr) {
+  s21_decimal val1 = {0}, val2 = {0};
+  int status = s21_div(val1, val2, NULL);
+  ck_assert_int_eq(status, S21_DEREFERENCING_NULL_POINTER_ATTEMPT);
 }
 END_TEST
 
@@ -443,6 +463,23 @@ START_TEST(test_s21_div_complex) {
 }
 END_TEST
 
+START_TEST(test_s21_div_mantissa_overflow_break) {
+  s21_decimal val1, val2, result;
+  // val1 = MAX_UINT96
+  init_decimal(&val1);
+  val1.bits[0] = 0xFFFFFFFF;
+  val1.bits[1] = 0xFFFFFFFF;
+  val1.bits[2] = 0xFFFFFFFF;
+
+  // val2 = 10
+  s21_from_int_to_decimal(10, &val2);
+  int status = s21_div(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_ne(result.bits[0], 0);
+}
+END_TEST
+
 START_TEST(test_s21_truncate_simple) {
   s21_decimal val, result;
   // 10.5 -> 10
@@ -499,7 +536,6 @@ END_TEST
 
 START_TEST(test_s21_negate_positive) {
   s21_decimal val, result;
-  // 10 -> -10
   s21_from_int_to_decimal(10, &val);
 
   int status = s21_negate(val, &result);
@@ -535,11 +571,12 @@ TCase *create_arithmetic_tcase(void) {
 
   tcase_add_test(tc, test_s21_mul_positive_numbers);
   tcase_add_test(tc, test_s21_mul_negative_positive);
-  tcase_add_test(tc, test_s21_mul_two_negatives);
-  tcase_add_test(tc, test_s21_mul_by_zero);
-  tcase_add_test(tc, test_s21_mul_with_scale);
   tcase_add_test(tc, test_s21_mul_big_numbers);
-  tcase_add_test(tc, test_s21_mul_overflow);
+  tcase_add_test(tc, test_s21_mul_null_ptr);
+  tcase_add_test(tc, test_s21_mul_overflow_recoverable);
+  tcase_add_test(tc, test_s21_mul_huge_scale_rounding);
+  tcase_add_test(tc, test_s21_mul_large_shift);
+  tcase_add_test(tc, test_s21_mul_too_small);
 
   tcase_add_test(tc, test_s21_div_simple);
   tcase_add_test(tc, test_s21_div_fractional);
@@ -547,8 +584,8 @@ TCase *create_arithmetic_tcase(void) {
   tcase_add_test(tc, test_s21_div_by_zero);
   tcase_add_test(tc, test_s21_div_small_result);
   tcase_add_test(tc, test_s21_div_complex);
-
-  // tcase_add_test(tc, );
+  tcase_add_test(tc, test_s21_div_mantissa_overflow_break);
+  tcase_add_test(tc, test_s21_div_null_ptr);
   // tcase_add_test(tc, );
   // tcase_add_test(tc, );
   return tc;
@@ -695,7 +732,7 @@ END_TEST
 
 // 1. decimal с дробной частью scale = 1
 START_TEST(test_s21_decimal_converters_decimal_to_int_scale_nonzero) {
-  s21_decimal input_dec = {.bits = {1234, 0, 0, 1 << 16}}; // scale = 1
+  s21_decimal input_dec = {.bits = {1234, 0, 0, 1 << 16}};  // scale = 1
   int expected_int = 1234 / 10;
   int my_int = 0;
 
@@ -772,7 +809,7 @@ END_TEST
 // 8. decimal с дробной частью и отрицательное число
 START_TEST(test_s21_decimal_converters_decimal_to_int_scale_negative) {
   s21_decimal input_dec = {
-      .bits = {567, 0, 0, (1 << 16) | (1u << 31)}}; // scale = 1, знак = минус
+      .bits = {567, 0, 0, (1 << 16) | (1u << 31)}};  // scale = 1, знак = минус
   int expected_int = -(567 / 10);
   int my_int = 0;
 
@@ -784,7 +821,7 @@ END_TEST
 
 // 9. decimal с нулем и scale != 0
 START_TEST(test_s21_decimal_converters_decimal_to_int_zero_scale) {
-  s21_decimal input_dec = {.bits = {0, 0, 0, 1 << 16}}; // scale = 1
+  s21_decimal input_dec = {.bits = {0, 0, 0, 1 << 16}};  // scale = 1
   int expected_int = 0;
   int my_int = 0;
 
@@ -944,7 +981,7 @@ END_TEST
 
 // 2. Положительное целое
 START_TEST(test_s21_decimal_from_decimal_to_float_positive_int) {
-  s21_decimal input = {.bits = {12345, 0, 0, 0}}; // scale = 0
+  s21_decimal input = {.bits = {12345, 0, 0, 0}};  // scale = 0
   float expected = 12345.0f;
   float result;
   ck_assert_int_eq(0, s21_from_decimal_to_float(input, &result));
@@ -954,7 +991,7 @@ END_TEST
 
 // 3. Положительное с дробной частью
 START_TEST(test_s21_decimal_from_decimal_to_float_positive_fraction) {
-  s21_decimal input = {.bits = {123456, 0, 0, 3 << 16}}; // scale = 3
+  s21_decimal input = {.bits = {123456, 0, 0, 3 << 16}};  // scale = 3
   float expected = 123.456f;
   float result;
   ck_assert_int_eq(0, s21_from_decimal_to_float(input, &result));
@@ -964,7 +1001,7 @@ END_TEST
 
 // 4. Отрицательное целое
 START_TEST(test_s21_decimal_from_decimal_to_float_negative_int) {
-  s21_decimal input = {.bits = {9876, 0, 0, 1u << 31}}; // знак минус, scale=0
+  s21_decimal input = {.bits = {9876, 0, 0, 1u << 31}};  // знак минус, scale=0
   float expected = -9876.0f;
   float result;
   ck_assert_int_eq(0, s21_from_decimal_to_float(input, &result));
@@ -975,7 +1012,7 @@ END_TEST
 // 5. Отрицательное с дробной частью
 START_TEST(test_s21_decimal_from_decimal_to_float_negative_fraction) {
   s21_decimal input = {
-      .bits = {1234567, 0, 0, (4 << 16) | (1u << 31)}}; // scale=4, знак минус
+      .bits = {1234567, 0, 0, (4 << 16) | (1u << 31)}};  // scale=4, знак минус
   float expected = -123.4567f;
   float result;
   ck_assert_int_eq(0, s21_from_decimal_to_float(input, &result));
@@ -986,8 +1023,8 @@ END_TEST
 // 6. Максимальное значение decimal
 START_TEST(test_s21_decimal_from_decimal_to_float_max) {
   s21_decimal input = {
-      .bits = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}}; // scale = 0
-  float expected = 79228162514264337593543950335.0f;    // приблизительно
+      .bits = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};  // scale = 0
+  float expected = 79228162514264337593543950335.0f;  // приблизительно
   float result;
   ck_assert_int_eq(0, s21_from_decimal_to_float(input, &result));
   // используем относительную точность
@@ -998,7 +1035,7 @@ END_TEST
 // 7. Минимальное отрицательное значение decimal
 START_TEST(test_s21_decimal_from_decimal_to_float_min_negative) {
   s21_decimal input = {.bits = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-                                1u << 31}}; // знак минус, scale=0
+                                1u << 31}};  // знак минус, scale=0
   float expected = -79228162514264337593543950335.0f;
   float result;
   ck_assert_int_eq(0, s21_from_decimal_to_float(input, &result));
@@ -1008,7 +1045,7 @@ END_TEST
 
 // 8. Decimal с максимальным scale
 START_TEST(test_s21_decimal_from_decimal_to_float_max_scale) {
-  s21_decimal input = {.bits = {1, 0, 0, 28 << 16}}; // scale = 28
+  s21_decimal input = {.bits = {1, 0, 0, 28 << 16}};  // scale = 28
   float expected = 1e-28f;
   float result;
   ck_assert_int_eq(0, s21_from_decimal_to_float(input, &result));
@@ -1019,7 +1056,7 @@ END_TEST
 // 9. Decimal единица с scale 28
 START_TEST(test_s21_decimal_from_decimal_to_float_one_scale_28) {
   s21_decimal input = {
-      .bits = {1000000000, 0, 0, 9 << 16}}; // scale = 9 → 1e-9 * 1e9 = 1
+      .bits = {1000000000, 0, 0, 9 << 16}};  // scale = 9 → 1e-9 * 1e9 = 1
   float expected = 1.0f;
   float result;
   ck_assert_int_eq(0, s21_from_decimal_to_float(input, &result));

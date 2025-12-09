@@ -1,10 +1,8 @@
 #include "s21_decimal.h"
 
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-  if (!result)
-    return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
-  if (is_full_value_zero(value_2))
-    return S21_DIV_BY_ZERO;
+  if (!result) return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
+  if (is_full_value_zero(value_2)) return S21_DIV_BY_ZERO;
 
   init_decimal(result);
 
@@ -29,15 +27,14 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
 
   // если делитель был меньше делимого по степени
   while (res_scale < 0) {
-    if (mul_by_10(&temp_res))
-      return S21_TOO_LARGE;
+    if (mul_by_10(&temp_res)) return S21_TOO_LARGE;
     res_scale++;
   }
 
   while (!is_full_value_zero(remainder) && res_scale < 28) {
     s21_decimal next_val = temp_res;
     if (mul_by_10(&next_val))
-      break; // в любом случае не сможем записать мантиссу
+      break;  // в любом случае не сможем записать мантиссу
 
     s21_decimal rem_x10 = remainder;
     mul_by_10(&rem_x10);
@@ -52,25 +49,29 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     res_scale++;
   }
 
-  s21_decimal difference;
-  sub_bits(&difference, man2, remainder);
+  s21_decimal difference = {0};
 
-  int needs_rounding = 0;
+  if (!is_full_value_zero(remainder)) {
+    sub_bits(&difference, man2, remainder);
 
-  if (is_greater(remainder, difference)) {
-    needs_rounding = 1;
-  }
-  // если remainder == difference, то дробь == 0.5, банковское округление
-  else if (is_equal(remainder, difference)) {
-    if (get_bit(temp_res, 0)) {
+    int needs_rounding = 0;
+
+    difference.bits[3] = 0;
+    remainder.bits[3] = 0;
+
+    if (s21_is_greater(remainder, difference)) {
       needs_rounding = 1;
+    } else if (s21_is_equal(remainder, difference)) {
+      if (get_bit(temp_res, 0)) {
+        needs_rounding = 1;
+      }
     }
-  }
 
-  if (needs_rounding) {
-    s21_decimal one = {{1, 0, 0, 0}};
-    if (add_bits(&temp_res, temp_res, one)) {
-      return res_sign == 0 ? S21_TOO_LARGE : S21_TOO_SMALL;
+    if (needs_rounding) {
+      s21_decimal one = {{1, 0, 0, 0}};
+      if (add_bits(&temp_res, temp_res, one)) {
+        return res_sign == 0 ? S21_TOO_LARGE : S21_TOO_SMALL;
+      }
     }
   }
 

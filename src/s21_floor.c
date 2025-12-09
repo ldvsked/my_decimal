@@ -1,8 +1,7 @@
 #include "s21_decimal.h"
 
 int s21_floor(s21_decimal value, s21_decimal* result) {
-  if (!result)
-    return 1;
+  if (!result) return 1;
   int return_code = 0;
   if (s21_truncate(value, result) != 0) {
     return_code = 1;

@@ -3,8 +3,7 @@
 void print_binary(int num) {
   for (int i = 31; i >= 0; i--) {
     printf("%d", (num >> i) & 1);
-    if (i % 8 == 0)
-      printf("|");
+    if (i % 8 == 0) printf("|");
   }
   printf("\n");
 }
@@ -45,8 +44,7 @@ void print_decimal_normal(const s21_decimal numb) {
     printf("0\n");
     return;
   }
-  if (sign)
-    printf("-");
+  if (sign) printf("-");
 
   char digits[100] = {0};
   int digit_count = 0;

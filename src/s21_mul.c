@@ -1,8 +1,7 @@
 #include "s21_decimal.h"
 
 int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-  if (!result)
-    return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
+  if (!result) return S21_DEREFERENCING_NULL_POINTER_ATTEMPT;
 
   for (int i = 0; i < 4; i++) result->bits[i] = 0;
 
