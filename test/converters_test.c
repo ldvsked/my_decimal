@@ -128,25 +128,22 @@ END_TEST
 // from_decimal_to_int
 
 START_TEST(test_s21_decimal_converters_decimal_to_int_case12) {
-  s21_decimal input_dec = {
-    .bits = {
-        0xFFFFFFFF,  // bits[0] — младшая часть мантиссы
-        0xFFFFFFFF,  // bits[1] — средняя часть мантиссы
-        0xFFFFFFFF,  // bits[2] — старшая часть мантиссы
-        0x801C0000   // bits[3] — знак + scale
-    }
-  };
+  s21_decimal input_dec = {.bits = {
+                               0xFFFFFFFF,  // bits[0] — младшая часть мантиссы
+                               0xFFFFFFFF,  // bits[1] — средняя часть мантиссы
+                               0xFFFFFFFF,  // bits[2] — старшая часть мантиссы
+                               0x801C0000  // bits[3] — знак + scale
+                           }};
 
   int expected_int = -7;
   int my_int;
 
   int result = s21_from_decimal_to_int(input_dec, &my_int);
 
-  ck_assert_int_eq(0, result);            // функция должна вернуть 0
-  ck_assert_int_eq(expected_int, my_int); // dst = -7
+  ck_assert_int_eq(0, result);  // функция должна вернуть 0
+  ck_assert_int_eq(expected_int, my_int);  // dst = -7
 }
 END_TEST
-
 
 START_TEST(test_s21_decimal_converters_decimal_to_int_normal) {
   s21_decimal input_dec = {.bits = {1234, 0, 0, 0}};
@@ -262,8 +259,9 @@ END_TEST
 
 // from_float_to_decimal
 
+// 0. Простой тест с положительным числом
 START_TEST(test_s21_decimal_converters_from_float_to_decimal) {
-  float input_float = 12.375;
+  float input_float = 12.375f;
   unsigned int expected_decimal[4] = {12375, 0, 0, 3 << 16};
   s21_decimal my_decimal;
 
@@ -300,15 +298,13 @@ END_TEST
 // 3. Малое положительное число > 1e-28
 START_TEST(test_s21_decimal_converters_from_float_to_decimal_small_positive) {
   float input_float = 1.23e-7f;
+  unsigned int expected_decimal[4] = {
+      123, 0, 0, 9 << 16};  // scale = 9 (1.23e-7 * 10^9 = 123)
   s21_decimal my_decimal;
 
   int result = s21_from_float_to_decimal(input_float, &my_decimal);
   ck_assert_int_eq(0, result);
-
-  float check;
-  s21_from_decimal_to_float(my_decimal, &check);
-  ck_assert(check > 0);
-  ck_assert(fabsf(check - input_float) / input_float < 1e-6);
+  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
 }
 END_TEST
 
@@ -335,28 +331,25 @@ END_TEST
 // 6. Положительное число с максимальной точностью float
 START_TEST(test_s21_decimal_converters_from_float_to_decimal_precision) {
   float input_float = 12345.6789f;
+  unsigned int expected_decimal[4] = {1234568, 0, 0, 2 << 16};
   s21_decimal my_decimal;
 
   int result = s21_from_float_to_decimal(input_float, &my_decimal);
   ck_assert_int_eq(0, result);
-
-  float check;
-  s21_from_decimal_to_float(my_decimal, &check);
-  ck_assert(fabsf(check - input_float) / input_float < 1e-6);
+  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
 }
 END_TEST
 
 // 7. Отрицательное число с минимальной дробной частью
 START_TEST(test_s21_decimal_converters_from_float_to_decimal_negative_small) {
   float input_float = -0.0001234f;
+  unsigned int expected_decimal[4] = {
+      1234, 0, 0, 7 << 16 | (1u << 31)};  // scale = 7, -0.0001234*10^7=1234
   s21_decimal my_decimal;
 
   int result = s21_from_float_to_decimal(input_float, &my_decimal);
   ck_assert_int_eq(0, result);
-
-  float check;
-  s21_from_decimal_to_float(my_decimal, &check);
-  ck_assert(fabsf(check - input_float) / fabsf(input_float) < 1e-6);
+  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
 }
 END_TEST
 
@@ -375,14 +368,25 @@ END_TEST
 // 9. Положительное число с большой дробной частью
 START_TEST(test_s21_decimal_converters_from_float_to_decimal_fraction_large) {
   float input_float = 0.9876543f;
+  unsigned int expected_decimal[4] = {
+      9876543, 0, 0, 7 << 16};  // scale = 7, 0.9876543*10^7=9876543
   s21_decimal my_decimal;
 
   int result = s21_from_float_to_decimal(input_float, &my_decimal);
   ck_assert_int_eq(0, result);
+  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
+}
+END_TEST
 
-  float check;
-  s21_from_decimal_to_float(my_decimal, &check);
-  ck_assert(fabsf(check - input_float) / input_float < 1e-6);
+// 10. Проверка конвертации float → decimal для значения 7.922816
+START_TEST(test_s21_from_float_to_decimal_specific_7_922816) {
+  float src = 7.922816f;
+  unsigned int expected_decimal[4] = {7922816, 0, 0, 6 << 16};
+  s21_decimal my_decimal;
+
+  int result = s21_from_float_to_decimal(src, &my_decimal);
+  ck_assert_int_eq(0, result);
+  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
 }
 END_TEST
 
@@ -538,8 +542,8 @@ Suite* test_s21_decimal_converters_suite(void) {
                  test_s21_decimal_converters_decimal_to_int_scale_negative);
   tcase_add_test(tc_dec_to_int,
                  test_s21_decimal_converters_decimal_to_int_zero_scale);
-  tcase_add_test(tc_dec_to_int, test_s21_decimal_converters_decimal_to_int_case12);
-  
+  tcase_add_test(tc_dec_to_int,
+                 test_s21_decimal_converters_decimal_to_int_case12);
 
   TCase* tc_float_to_dec = tcase_create("from_float_to_dec");
   tcase_add_test(tc_float_to_dec,
@@ -566,6 +570,8 @@ Suite* test_s21_decimal_converters_suite(void) {
   tcase_add_test(
       tc_float_to_dec,
       test_s21_decimal_converters_from_float_to_decimal_fraction_large);
+  tcase_add_test(tc_float_to_dec,
+                 test_s21_from_float_to_decimal_specific_7_922816);
 
   TCase* tc_decimal_to_float = tcase_create("from_decimal_to_float");
   tcase_add_test(tc_decimal_to_float,

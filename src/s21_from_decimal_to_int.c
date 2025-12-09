@@ -7,7 +7,8 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst) {
   int pow_10 =
       (src.bits[3] << 1) >>
       17;  // ну по идее убрали на всякий случай знаковый бит и сдвинули обратно
-  if ((src.bits[1] != 0 || src.bits[2] != 0) && !pow_10){ // не влезает и делиться потом не будет
+  if ((src.bits[1] != 0 || src.bits[2] != 0) &&
+      !pow_10) {  // не влезает и делиться потом не будет
     flag = 1;
   }
 
@@ -17,7 +18,7 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst) {
   unsigned int b1 = src.bits[1];
   unsigned int b2 = src.bits[2];
 
-  for (int i = 0; i < pow_10; ++i){
+  for (int i = 0; i < pow_10; ++i) {
     long long carry;
 
     // старший разряд
@@ -33,10 +34,9 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst) {
     temp = (carry << 32) | b0;
     b0 = temp / 10;
     carry = temp % 10;
-
   }
 
-  //long long abs = src.bits[0] / pow(10, pow_10);
+  // long long abs = src.bits[0] / pow(10, pow_10);
   int sign = pow(-1, (src.bits[3] >> 31) & 1);
 
   if (b1 || b2 || b0 > ABS_MAX + 1 || (b0 == ABS_MAX + 1 && sign != (-1))) {
