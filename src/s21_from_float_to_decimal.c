@@ -21,17 +21,49 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
     src_abs = atof(buffer);
   }
 
-  int scale = 0;
-  while (!flag && scale < 28 && floor(src_abs) != src_abs) {
-    scale += 1;
-    src_abs *= 10;
+  // вычисляем количество цифр в целой части
+  int int_digits = 0;
+  double tmp = src_abs;
+  if (!flag && tmp >= 1.0) {
+    while (tmp >= 1.0) {
+      tmp /= 10.0;
+      int_digits++;
+    }
   }
-  // printf("%d\n", (int)src_abs);
-  // printf("%d\n", scale);
+
+  int scale = 0;
+  int max_scale = 7 - int_digits;  // максимальный scale
+  if (max_scale < 0) max_scale = 0;
+
+  const double EPS = 1e-9;
+  while (!flag && scale < max_scale && fabs(src_abs - round(src_abs)) > EPS) {
+    double before = src_abs;
+    src_abs *= 10.0;
+
+    if (before < 1.0 && src_abs < 1.0) {
+      max_scale++;  // расширяем scale, потому что значащих цифр не прибыло
+    }
+
+    scale++;
+  }
 
   if (!flag) {
     // максимум у флота 3.4e38
-    unsigned long long int_value = (unsigned long long)src_abs;
+    // Банковское округление: округляем к ближайшему чётному целому
+    unsigned long long int_value;
+    double int_part;
+    double frac_part = modf(src_abs, &int_part);
+
+    if (frac_part == 0.5) {
+      // если половина, округляем к ближайшему чётному
+      if (((unsigned long long)int_part) % 2 == 0)
+        int_value = (unsigned long long)int_part;
+      else
+        int_value = (unsigned long long)int_part + 1;
+    } else {
+      // обычное округление
+      int_value = (unsigned long long)(src_abs + 0.5);
+    }
 
     dst->bits[0] = (unsigned int)int_value;
     dst->bits[1] = (unsigned int)(int_value >> 32);
