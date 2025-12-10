@@ -37,8 +37,13 @@ void set_sign(s21_decimal *value, int sign);
 int get_scale(s21_decimal value);
 void set_scale(s21_decimal *value, int scale);
 void normalize_scale(s21_decimal *value_1, s21_decimal *value_2);
+s21_big_decimal decimal_to_big(s21_decimal value);
+void big_to_decimal(s21_big_decimal src, s21_decimal *dst);
+int add_abs_with_scale(s21_decimal v1, s21_decimal v2,
+                              int scale, int sign, s21_decimal *result);
 int compare_bits(s21_decimal value_1, s21_decimal value_2);
 int add_bits(s21_decimal *res, s21_decimal v1, s21_decimal v2);
+int add_bits_temp(s21_decimal *result, s21_decimal one);
 int sub_bits(s21_decimal *res, s21_decimal v1, s21_decimal v2);
 void set_decimal(s21_decimal *dst, int *bits, int scale, int sign);
 
