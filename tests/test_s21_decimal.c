@@ -1189,7 +1189,7 @@ START_TEST(test_s21_floor_small_positive) {
 END_TEST
 
 START_TEST(test_s21_floor_null_pointer) {
-  s21_decimal val, result;
+  s21_decimal val;
   s21_from_int_to_decimal(10, &val);
 
   int status = s21_floor(val, NULL);
@@ -1290,7 +1290,7 @@ START_TEST(test_s21_round_small_fraction) {
 END_TEST
 
 START_TEST(test_s21_round_null_pointer) {
-  s21_decimal val, result;
+  s21_decimal val;
   s21_from_int_to_decimal(10, &val);
 
   int status = s21_round(val, NULL);
@@ -1354,7 +1354,7 @@ START_TEST(test_s21_truncate_no_fraction) {
 END_TEST
 
 START_TEST(test_s21_truncate_null_pointer) {
-  s21_decimal val, result;
+  s21_decimal val;
   s21_from_int_to_decimal(10, &val);
 
   int status = s21_truncate(val, NULL);
@@ -1376,7 +1376,7 @@ START_TEST(test_s21_negate_positive) {
 END_TEST
 
 START_TEST(test_s21_negate_null_pointer) {
-  s21_decimal val, result;
+  s21_decimal val;
   s21_from_int_to_decimal(10, &val);
 
   int status = s21_negate(val, NULL);
