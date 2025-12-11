@@ -1,3 +1,7 @@
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "s21_decimal.h"
 
 int s21_from_float_to_decimal(float src, s21_decimal *dst) {
@@ -5,7 +9,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
   dst->bits[0] = dst->bits[1] = dst->bits[2] = dst->bits[3] = 0;
 
   int sign = (src < 0);
-  float src_abs = fabsf(src);  // для большей точности
+  double src_abs = fabs((double)src);  // для большей точности
 
   if (src_abs > 0 && src_abs < 1e-28) {
     flag = 1;
@@ -48,25 +52,25 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst) {
   }
 
   if (!flag) {
-    // максимум у флота 3.4e38
     // Банковское округление: округляем к ближайшему чётному целому
-    unsigned long long int_value;
     double int_part;
     double frac_part = modf(src_abs, &int_part);
 
+    // применяем банковское округление
     if (frac_part == 0.5) {
-      // если половина, округляем к ближайшему чётному
-      if (((unsigned long long)int_part) % 2 == 0)
-        int_value = (unsigned long long)int_part;
-      else
-        int_value = (unsigned long long)int_part + 1;
+      // если нечетное → +1
+      if (fmod(int_part, 2.0) != 0.0) int_part += 1.0;
     } else {
-      // обычное округление
-      int_value = (unsigned long long)(src_abs + 0.5);
+      int_part = (double)(float)round(src_abs);
     }
 
-    dst->bits[0] = (unsigned int)int_value;
-    dst->bits[1] = (unsigned int)(int_value >> 32);
+    // Разбиваем число на 32-битные слова без переполнения
+    double temp = int_part;
+    dst->bits[0] = (unsigned int)fmod(temp, 4294967296.0);
+    temp = floor(temp / 4294967296.0);
+    dst->bits[1] = (unsigned int)fmod(temp, 4294967296.0);
+    temp = floor(temp / 4294967296.0);
+    dst->bits[2] = (unsigned int)fmod(temp, 4294967296.0);
   }
 
   if (!flag && sign) {

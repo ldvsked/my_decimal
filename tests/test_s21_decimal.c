@@ -558,6 +558,12 @@ int uint_array_eq(unsigned int *actual, unsigned int *expected, int n) {
   for (int i = 0; !flag && i < n; ++i) {
     flag = !(actual[i] == expected[i]);
   }
+  if (flag) {
+    printf("%u %u\n", actual[0], expected[0]);
+    printf("%u %u\n", actual[1], expected[1]);
+    printf("%u %u\n", actual[2], expected[2]);
+    printf("%u %u\n", actual[3], expected[3]);
+  }
   return flag;
 }
 
@@ -795,7 +801,6 @@ START_TEST(test_s21_decimal_converters_decimal_to_int_case12) {
                                0x801C0000  // bits[3] — знак + scale
                            }};
 
-
   int expected_int = -7;
   int my_int;
 
@@ -925,7 +930,7 @@ START_TEST(test_s21_decimal_converters_from_float_to_decimal_fraction_large) {
 
   int result = s21_from_float_to_decimal(input_float, &my_decimal);
   ck_assert_int_eq(0, result);
-ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
+  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
 }
 END_TEST
 
@@ -936,6 +941,18 @@ START_TEST(test_s21_from_float_to_decimal_specific_7_922816) {
   s21_decimal my_decimal;
 
   int result = s21_from_float_to_decimal(src, &my_decimal);
+  ck_assert_int_eq(0, result);
+  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
+}
+END_TEST
+
+// 11.
+START_TEST(test_s21_decimal_converters_from_float_to_decimal_large) {
+  float input_float = 3.961408e+28f;
+  unsigned int expected_decimal[4] = {0, 0, 0x80000000, 0};  // little-endian
+  s21_decimal my_decimal;
+
+  int result = s21_from_float_to_decimal(input_float, &my_decimal);
   ck_assert_int_eq(0, result);
   ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
 }
@@ -1091,8 +1108,9 @@ TCase *create_converters_tcase(void) {
       tc, test_s21_decimal_converters_from_float_to_decimal_integer_float);
   tcase_add_test(
       tc, test_s21_decimal_converters_from_float_to_decimal_fraction_large);
-  tcase_add_test(tc,
-                 test_s21_from_float_to_decimal_specific_7_922816);
+  tcase_add_test(tc, test_s21_decimal_converters_from_float_to_decimal_large);
+
+  tcase_add_test(tc, test_s21_from_float_to_decimal_specific_7_922816);
   tcase_add_test(tc, test_s21_decimal_converters_from_decimal_to_float_normal);
   tcase_add_test(tc, test_s21_decimal_from_decimal_to_float_zero);
   tcase_add_test(tc, test_s21_decimal_from_decimal_to_float_positive_int);
