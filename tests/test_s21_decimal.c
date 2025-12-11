@@ -500,72 +500,6 @@ START_TEST(test_s21_div_mantissa_overflow_break) {
 }
 END_TEST
 
-START_TEST(test_s21_truncate_simple) {
-  s21_decimal val, result;
-  // 10.5 -> 10
-  s21_from_int_to_decimal(105, &val);
-  set_scale(&val, 1);
-
-  int status = s21_truncate(val, &result);
-
-  ck_assert_int_eq(status, S21_OK);
-  ck_assert_int_eq(result.bits[0], 10);
-  ck_assert_int_eq(get_scale(result), 0);
-}
-END_TEST
-
-START_TEST(test_s21_truncate_negative) {
-  s21_decimal val, result;
-  s21_from_int_to_decimal(-105, &val);
-  set_scale(&val, 1);
-
-  int status = s21_truncate(val, &result);
-
-  ck_assert_int_eq(status, 0);
-  ck_assert_int_eq(result.bits[0], 10);
-  ck_assert_int_eq(get_sign(result), 1);
-  ck_assert_int_eq(get_scale(result), 0);
-}
-END_TEST
-
-START_TEST(test_s21_truncate_large_scale) {
-  s21_decimal val, result;
-  // 123.456 -> 123
-  s21_from_int_to_decimal(123456, &val);
-  set_scale(&val, 3);
-
-  int status = s21_truncate(val, &result);
-
-  ck_assert_int_eq(status, 0);
-  ck_assert_int_eq(result.bits[0], 123);
-  ck_assert_int_eq(get_scale(result), 0);
-}
-END_TEST
-
-START_TEST(test_s21_truncate_no_fraction) {
-  s21_decimal val, result;
-  s21_from_int_to_decimal(10, &val);
-
-  int status = s21_truncate(val, &result);
-
-  ck_assert_int_eq(status, 0);
-  ck_assert_int_eq(result.bits[0], 10);
-  ck_assert_int_eq(get_scale(result), 0);
-}
-END_TEST
-
-START_TEST(test_s21_negate_positive) {
-  s21_decimal val, result;
-  s21_from_int_to_decimal(10, &val);
-
-  int status = s21_negate(val, &result);
-
-  ck_assert_int_eq(status, 0);
-  ck_assert_int_eq(result.bits[0], 10);
-  ck_assert_int_eq(get_sign(result), 1);
-}
-END_TEST
-
 TCase *create_arithmetic_tcase(void) {
   TCase *tc = tcase_create("arithmetic");
   tcase_add_test(tc, test_s21_add_positive_numbers);
@@ -1254,6 +1188,16 @@ START_TEST(test_s21_floor_small_positive) {
 }
 END_TEST
 
+START_TEST(test_s21_floor_null_pointer) {
+  s21_decimal val, result;
+  s21_from_int_to_decimal(10, &val);
+
+  int status = s21_floor(val, NULL);
+
+  ck_assert_int_eq(status, 1);
+}
+END_TEST
+
 START_TEST(test_s21_round_normal_positive) {
   s21_decimal val = {{34, 0, 0, 0x00010000}};
   s21_decimal res;
@@ -1345,6 +1289,102 @@ START_TEST(test_s21_round_small_fraction) {
 }
 END_TEST
 
+START_TEST(test_s21_round_null_pointer) {
+  s21_decimal val, result;
+  s21_from_int_to_decimal(10, &val);
+
+  int status = s21_round(val, NULL);
+
+  ck_assert_int_eq(status, 1);
+}
+END_TEST
+
+START_TEST(test_s21_truncate_simple) {
+  s21_decimal val, result;
+  // 10.5 -> 10
+  s21_from_int_to_decimal(105, &val);
+  set_scale(&val, 1);
+
+  int status = s21_truncate(val, &result);
+
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_eq(result.bits[0], 10);
+  ck_assert_int_eq(get_scale(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_truncate_negative) {
+  s21_decimal val, result;
+  s21_from_int_to_decimal(-105, &val);
+  set_scale(&val, 1);
+
+  int status = s21_truncate(val, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 10);
+  ck_assert_int_eq(get_sign(result), 1);
+  ck_assert_int_eq(get_scale(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_truncate_large_scale) {
+  s21_decimal val, result;
+  // 123.456 -> 123
+  s21_from_int_to_decimal(123456, &val);
+  set_scale(&val, 3);
+
+  int status = s21_truncate(val, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 123);
+  ck_assert_int_eq(get_scale(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_truncate_no_fraction) {
+  s21_decimal val, result;
+  s21_from_int_to_decimal(10, &val);
+
+  int status = s21_truncate(val, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 10);
+  ck_assert_int_eq(get_scale(result), 0);
+}
+END_TEST
+
+START_TEST(test_s21_truncate_null_pointer) {
+  s21_decimal val, result;
+  s21_from_int_to_decimal(10, &val);
+
+  int status = s21_truncate(val, NULL);
+
+  ck_assert_int_eq(status, 1);
+}
+END_TEST
+
+START_TEST(test_s21_negate_positive) {
+  s21_decimal val, result;
+  s21_from_int_to_decimal(10, &val);
+
+  int status = s21_negate(val, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 10);
+  ck_assert_int_eq(get_sign(result), 1);
+}
+END_TEST
+
+START_TEST(test_s21_negate_null_pointer) {
+  s21_decimal val, result;
+  s21_from_int_to_decimal(10, &val);
+
+  int status = s21_negate(val, NULL);
+
+  ck_assert_int_eq(status, 1);
+}
+END_TEST
+
 TCase *create_other_funcs_tcase(void) {
   TCase *tc = tcase_create("other");
   tcase_add_test(tc, test_s21_floor_positive_with_fraction);
@@ -1354,6 +1394,7 @@ TCase *create_other_funcs_tcase(void) {
   tcase_add_test(tc, test_s21_floor_zero);
   tcase_add_test(tc, test_s21_floor_small_negative);
   tcase_add_test(tc, test_s21_floor_small_positive);
+  tcase_add_test(tc, test_s21_floor_null_pointer);
 
   tcase_add_test(tc, test_s21_round_normal_positive);
   tcase_add_test(tc, test_s21_round_normal_positive_up);
@@ -1363,13 +1404,16 @@ TCase *create_other_funcs_tcase(void) {
   tcase_add_test(tc, test_s21_round_half_negative);
   tcase_add_test(tc, test_s21_round_zero);
   tcase_add_test(tc, test_s21_round_small_fraction);
+  tcase_add_test(tc, test_s21_round_null_pointer);
 
   tcase_add_test(tc, test_s21_truncate_simple);
   tcase_add_test(tc, test_s21_truncate_negative);
   tcase_add_test(tc, test_s21_truncate_large_scale);
   tcase_add_test(tc, test_s21_truncate_no_fraction);
+  tcase_add_test(tc, test_s21_truncate_null_pointer);
 
   tcase_add_test(tc, test_s21_negate_positive);
+  tcase_add_test(tc, test_s21_negate_null_pointer);
   return tc;
 }
 
