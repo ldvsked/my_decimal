@@ -135,6 +135,16 @@ START_TEST(test_21_add_max_min) {
 }
 END_TEST
 
+START_TEST(test_21_add_null_pointer) {
+  s21_decimal val1 = {{0, 0, 0, 0}};
+  s21_decimal val2 = {{0, 0, 0, 0}};
+
+  int status = s21_add(val1, val2, NULL);
+
+  ck_assert_int_eq(status, 4);
+}
+END_TEST
+
 START_TEST(test_s21_sub_positive_numbers) {
   s21_decimal val1, val2, result;
   s21_from_int_to_decimal(100, &val1);
@@ -250,6 +260,16 @@ START_TEST(test_21_sub_max_min) {
   int status = s21_sub(max_dec, min_dec, &result);
 
   ck_assert_int_eq(status, 1);
+}
+END_TEST
+
+START_TEST(test_21_sub_null_pointer) {
+  s21_decimal val1 = {{0, 0, 0, 0}};
+  s21_decimal val2 = {{0, 0, 0, 0}};
+
+  int status = s21_sub(val1, val2, NULL);
+
+  ck_assert_int_eq(status, 4);
 }
 END_TEST
 
@@ -558,6 +578,7 @@ TCase *create_arithmetic_tcase(void) {
   tcase_add_test(tc, test_21_add_min_min);
   tcase_add_test(tc, test_21_add_max_max);
   tcase_add_test(tc, test_21_add_max_min);
+  tcase_add_test(tc, test_21_add_null_pointer);
 
   tcase_add_test(tc, test_s21_sub_positive_numbers);
   tcase_add_test(tc, test_s21_sub_negative_numbers);
@@ -568,6 +589,7 @@ TCase *create_arithmetic_tcase(void) {
   tcase_add_test(tc, test_21_sub_min_min);
   tcase_add_test(tc, test_21_sub_max_max);
   tcase_add_test(tc, test_21_sub_max_min);
+  tcase_add_test(tc, test_21_sub_null_pointer);
 
   tcase_add_test(tc, test_s21_mul_positive_numbers);
   tcase_add_test(tc, test_s21_mul_negative_positive);
