@@ -1470,17 +1470,6 @@ TCase *create_other_funcs_tcase(void) {
   return tc;
 }
 
-Suite *s21_decimal_suite(void) {
-  Suite *s = suite_create("s21_decimal");
-
-  suite_add_tcase(s, create_arithmetic_tcase());
-  suite_add_tcase(s, create_comparison_tcase());
-  suite_add_tcase(s, create_converters_tcase());
-  suite_add_tcase(s, create_other_funcs_tcase());
-
-  return s;
-}
-
 START_TEST(test_s21_is_less_positive) {
   s21_decimal a, b;
   s21_from_int_to_decimal(5, &a);
@@ -1712,6 +1701,17 @@ TCase *create_comparison_tcase(void) {
   tcase_add_test(tc, test_s21_comparison_mantissa_with_high_bits_set);
 
   return tc;
+}
+
+Suite *s21_decimal_suite(void) {
+  Suite *s = suite_create("s21_decimal");
+
+  suite_add_tcase(s, create_arithmetic_tcase());
+  suite_add_tcase(s, create_comparison_tcase());
+  suite_add_tcase(s, create_converters_tcase());
+  suite_add_tcase(s, create_other_funcs_tcase());
+
+  return s;
 }
 
 int main(void) {
