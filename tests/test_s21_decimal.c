@@ -602,12 +602,6 @@ TCase *create_arithmetic_tcase(void) {
   return tc;
 }
 
-// TCase *create_comparisons_tcase(void) {
-//   TCase *tc = tcase_create("...");
-//   tcase_add_test(tc, ...);
-//   return tc;
-// }
-
 int uint_array_eq(unsigned int *actual, unsigned int *expected, int n) {
   int flag = 0;
   for (int i = 0; !flag && i < n; ++i) {
@@ -1480,7 +1474,7 @@ Suite *s21_decimal_suite(void) {
   Suite *s = suite_create("s21_decimal");
 
   suite_add_tcase(s, create_arithmetic_tcase());
-  //   suite_add_tcase(s, create_comparison_tcase());
+  suite_add_tcase(s, create_comparison_tcase());
   suite_add_tcase(s, create_converters_tcase());
   suite_add_tcase(s, create_other_funcs_tcase());
 
