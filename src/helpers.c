@@ -2,12 +2,6 @@
 
 void init_decimal(s21_decimal *value) { memset(value, 0, sizeof(s21_decimal)); }
 
-void print_decimal(s21_decimal value) {
-  printf("Sign: %d, Scale: %d, Value: %u %u %u\n", get_sign(value),
-         get_scale(value), (unsigned int)value.bits[2],
-         (unsigned int)value.bits[1], (unsigned int)value.bits[0]);
-}
-
 int get_sign(s21_decimal value) { return (value.bits[3] >> 31) & 1; }
 
 void set_sign(s21_decimal *value, int sign) {

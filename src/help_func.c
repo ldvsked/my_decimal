@@ -1,20 +1,5 @@
 #include "s21_decimal.h"
 
-void print_binary(int num) {
-  for (int i = 31; i >= 0; i--) {
-    printf("%d", (num >> i) & 1);
-    if (i % 8 == 0) printf("|");
-  }
-  printf("\n");
-}
-
-void print_decimal_binary(s21_decimal number) {
-  for (int i = 0; i < 4; i++) {
-    printf("%d :", i);
-    print_binary(number.bits[i]);
-    printf("---------------------------------------\n");
-  }
-}
 
 void set_degree(s21_decimal *ch, int exp) {
   ch->bits[3] = (ch->bits[3] & 0x8000FFFF) | (exp << 16);
@@ -26,48 +11,6 @@ int is_zero(const unsigned int bits[3]) {
   return bits[0] == 0 && bits[1] == 0 && bits[2] == 0;
 }
 
-void print_decimal_normal(const s21_decimal numb) {
-  int sign = get_sign(numb);
-  int scale = get_degree(numb);
-  unsigned int bits[3] = {numb.bits[0], numb.bits[1], numb.bits[2]};
-  if (is_zero(bits)) {
-    printf("0\n");
-    return;
-  }
-  if (sign) printf("-");
-
-  char digits[100] = {0};
-  int digit_count = 0;
-
-  while (!is_zero(bits)) {
-    int digit = divide_by_10(bits);
-    digits[digit_count++] = '0' + digit;
-  }
-
-  if (scale == 0) {
-    for (int i = digit_count - 1; i >= 0; i--) {
-      printf("%c", digits[i]);
-    }
-  } else {
-    if (digit_count <= scale) {
-      printf("0.");
-      for (int i = 0; i < scale - digit_count; i++) {
-        printf("0");
-      }
-      for (int i = digit_count - 1; i >= 0; i--) {
-        printf("%c", digits[i]);
-      }
-    } else {
-      for (int i = digit_count - 1; i >= 0; i--) {
-        printf("%c", digits[i]);
-        if (i == scale) {
-          printf(".");
-        }
-      }
-    }
-  }
-  printf("\n");
-}
 
 s21_decimal normalize_decimal(s21_decimal num) {
   s21_decimal result = {{0}};
