@@ -27,80 +27,80 @@ void set_scale(s21_decimal *value, int scale) {
 }
 
 void normalize_scale(s21_decimal *value_1, s21_decimal *value_2) {
-    int scale1 = get_scale(*value_1);
-    int scale2 = get_scale(*value_2);
-    if (scale1 == scale2) return;
-    if (scale1 < scale2) {
-        s21_decimal temp = *value_1;
-        int diff = scale2 - scale1;
-        int overflow = 0;
-        for (int i = 0; i < diff; i++) {
-            if (mul_by_10(&temp) != S21_OK) {
-                overflow = 1;
-                break;
-            }
-        }
-        if (!overflow) {
-            *value_1 = temp;
-            set_scale(value_1, scale2);
-        } else {
-            s21_big_decimal big_v2 = decimal_to_big(*value_2);
-            int diff_reverse = scale2 - scale1;
-            int remainder = 0;
-            for (int i = 0; i < diff_reverse; i++) {
-                remainder = div_by_10_big(&big_v2);
-            }
-            bank_rounding(&big_v2, remainder);
-            if (!is_overflow_big(big_v2)) {
-                big_to_decimal(big_v2, value_2);
-                set_scale(value_2, scale1);
-            } else {
-                set_scale(value_1, scale1); 
-                set_scale(value_2, scale2);
-            }
-        }
-    } else {
-        s21_decimal temp = *value_2;
-        int diff = scale1 - scale2;
-        int overflow = 0;
-        for (int i = 0; i < diff; i++) {
-            if (mul_by_10(&temp) != S21_OK) {
-                overflow = 1;
-                break;
-            }
-        }
-        if (!overflow) {
-            *value_2 = temp;
-            set_scale(value_2, scale1);
-        } else {
-             s21_big_decimal big_v1 = decimal_to_big(*value_1);
-            int diff_reverse = scale1 - scale2;
-            int remainder = 0;
-            for (int i = 0; i < diff_reverse; i++) {
-                remainder = div_by_10_big(&big_v1);
-            }
-            bank_rounding(&big_v1, remainder);
-            if (!is_overflow_big(big_v1)) {
-                big_to_decimal(big_v1, value_1);
-                set_scale(value_1, scale2);
-            }
-        }
+  int scale1 = get_scale(*value_1);
+  int scale2 = get_scale(*value_2);
+  if (scale1 == scale2) return;
+  if (scale1 < scale2) {
+    s21_decimal temp = *value_1;
+    int diff = scale2 - scale1;
+    int overflow = 0;
+    for (int i = 0; i < diff; i++) {
+      if (mul_by_10(&temp) != S21_OK) {
+        overflow = 1;
+        break;
+      }
     }
+    if (!overflow) {
+      *value_1 = temp;
+      set_scale(value_1, scale2);
+    } else {
+      s21_big_decimal big_v2 = decimal_to_big(*value_2);
+      int diff_reverse = scale2 - scale1;
+      int remainder = 0;
+      for (int i = 0; i < diff_reverse; i++) {
+        remainder = div_by_10_big(&big_v2);
+      }
+      bank_rounding(&big_v2, remainder);
+      if (!is_overflow_big(big_v2)) {
+        big_to_decimal(big_v2, value_2);
+        set_scale(value_2, scale1);
+      } else {
+        set_scale(value_1, scale1);
+        set_scale(value_2, scale2);
+      }
+    }
+  } else {
+    s21_decimal temp = *value_2;
+    int diff = scale1 - scale2;
+    int overflow = 0;
+    for (int i = 0; i < diff; i++) {
+      if (mul_by_10(&temp) != S21_OK) {
+        overflow = 1;
+        break;
+      }
+    }
+    if (!overflow) {
+      *value_2 = temp;
+      set_scale(value_2, scale1);
+    } else {
+      s21_big_decimal big_v1 = decimal_to_big(*value_1);
+      int diff_reverse = scale1 - scale2;
+      int remainder = 0;
+      for (int i = 0; i < diff_reverse; i++) {
+        remainder = div_by_10_big(&big_v1);
+      }
+      bank_rounding(&big_v1, remainder);
+      if (!is_overflow_big(big_v1)) {
+        big_to_decimal(big_v1, value_1);
+        set_scale(value_1, scale2);
+      }
+    }
+  }
 }
 
 s21_big_decimal decimal_to_big(s21_decimal value) {
-    s21_big_decimal res = {0};
-    for(int i=0; i<3; i++) res.bits[i] = value.bits[i];
-    return res;
+  s21_big_decimal res = {0};
+  for (int i = 0; i < 3; i++) res.bits[i] = value.bits[i];
+  return res;
 }
 
 void big_to_decimal(s21_big_decimal src, s21_decimal *dst) {
-    init_decimal(dst);
-    for(int i=0; i<3; i++) dst->bits[i] = src.bits[i];
+  init_decimal(dst);
+  for (int i = 0; i < 3; i++) dst->bits[i] = src.bits[i];
 }
 
-int add_abs_with_scale(s21_decimal v1, s21_decimal v2,
-                              int scale, int sign, s21_decimal *result) {
+int add_abs_with_scale(s21_decimal v1, s21_decimal v2, int scale, int sign,
+                       s21_decimal *result) {
   s21_big_decimal bres;
   s21_big_decimal b1 = decimal_to_big(v1);
   s21_big_decimal b2 = decimal_to_big(v2);
@@ -146,9 +146,9 @@ int add_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
 }
 
 int add_bits_temp(s21_decimal *result, s21_decimal one) {
-    s21_decimal temp;
-    memcpy(&temp, result, sizeof(s21_decimal));
-    return add_bits(&temp, temp, one);
+  s21_decimal temp;
+  memcpy(&temp, result, sizeof(s21_decimal));
+  return add_bits(&temp, temp, one);
 }
 
 int sub_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {

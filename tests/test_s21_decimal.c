@@ -500,6 +500,60 @@ START_TEST(test_s21_div_mantissa_overflow_break) {
 }
 END_TEST
 
+START_TEST(test_s21_div_rounding_odd_half) {
+  s21_decimal val1 = {{3, 0, 0, 0}};
+  set_scale(&val1, 28);
+
+  s21_decimal val2 = {{2, 0, 0, 0}};
+
+  s21_decimal result;
+  int status = s21_div(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_eq(result.bits[0], 2);
+  ck_assert_int_eq(get_scale(result), 28);
+}
+END_TEST
+
+START_TEST(test_s21_div_rounding_greater_half) {
+  s21_decimal val1 = {{2, 0, 0, 0}};
+  set_scale(&val1, 28);  // 2 * 10^-28
+
+  s21_decimal val2 = {{3, 0, 0, 0}};
+
+  s21_decimal result;
+  int status = s21_div(val1, val2, &result);
+
+  ck_assert_int_eq(status, S21_OK);
+  ck_assert_int_eq(result.bits[0], 1);  // 0 + 1 = 1
+  ck_assert_int_eq(get_scale(result), 28);
+}
+END_TEST
+
+START_TEST(test_s21_div_scale_align_overflow) {
+  s21_decimal v1, v2, res;
+
+  // v1 = MAX_UINT96, scale1 = 0
+  init_decimal(&v1);
+  v1.bits[0] = 0xFFFFFFFF;
+  v1.bits[1] = 0xFFFFFFFF;
+  v1.bits[2] = 0xFFFFFFFF;
+  set_scale(&v1, 0);
+  set_sign(&v1, 0);
+
+  // v2 = 1e-28
+  init_decimal(&v2);
+  v2.bits[0] = 1;
+  v2.bits[1] = 0;
+  v2.bits[2] = 0;
+  set_scale(&v2, 28);
+  set_sign(&v2, 0);
+
+  int status = s21_div(v1, v2, &res);
+  ck_assert_int_eq(status, S21_TOO_LARGE);
+}
+END_TEST
+
 TCase *create_arithmetic_tcase(void) {
   TCase *tc = tcase_create("arithmetic");
   tcase_add_test(tc, test_s21_add_positive_numbers);
@@ -542,8 +596,9 @@ TCase *create_arithmetic_tcase(void) {
   tcase_add_test(tc, test_s21_div_complex);
   tcase_add_test(tc, test_s21_div_mantissa_overflow_break);
   tcase_add_test(tc, test_s21_div_null_ptr);
-  // tcase_add_test(tc, );
-  // tcase_add_test(tc, );
+  tcase_add_test(tc, test_s21_div_rounding_greater_half);
+  tcase_add_test(tc, test_s21_div_rounding_odd_half);
+  tcase_add_test(tc, test_s21_div_scale_align_overflow);
   return tc;
 }
 
@@ -795,7 +850,6 @@ START_TEST(test_s21_decimal_converters_decimal_to_int_case12) {
                                0x801C0000  // bits[3] — знак + scale
                            }};
 
-
   int expected_int = -7;
   int my_int;
 
@@ -925,7 +979,7 @@ START_TEST(test_s21_decimal_converters_from_float_to_decimal_fraction_large) {
 
   int result = s21_from_float_to_decimal(input_float, &my_decimal);
   ck_assert_int_eq(0, result);
-ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
+  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
 }
 END_TEST
 
@@ -1091,8 +1145,7 @@ TCase *create_converters_tcase(void) {
       tc, test_s21_decimal_converters_from_float_to_decimal_integer_float);
   tcase_add_test(
       tc, test_s21_decimal_converters_from_float_to_decimal_fraction_large);
-  tcase_add_test(tc,
-                 test_s21_from_float_to_decimal_specific_7_922816);
+  tcase_add_test(tc, test_s21_from_float_to_decimal_specific_7_922816);
   tcase_add_test(tc, test_s21_decimal_converters_from_decimal_to_float_normal);
   tcase_add_test(tc, test_s21_decimal_from_decimal_to_float_zero);
   tcase_add_test(tc, test_s21_decimal_from_decimal_to_float_positive_int);
