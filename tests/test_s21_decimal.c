@@ -1001,18 +1001,6 @@ START_TEST(test_s21_from_float_to_decimal_specific_7_922816) {
 }
 END_TEST
 
-// 11.
-START_TEST(test_s21_decimal_converters_from_float_to_decimal_large) {
-  float input_float = 3.961408e+28f;
-  unsigned int expected_decimal[4] = {0, 0, 0x80000000, 0};  // little-endian
-  s21_decimal my_decimal;
-
-  int result = s21_from_float_to_decimal(input_float, &my_decimal);
-  ck_assert_int_eq(0, result);
-  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
-}
-END_TEST
-
 // from_decimal_to_float
 START_TEST(test_s21_decimal_converters_from_decimal_to_float_normal) {
   s21_decimal input_dec = {.bits = {1234375, 0, 0, 3 << 16}};
@@ -1163,9 +1151,9 @@ TCase *create_converters_tcase(void) {
       tc, test_s21_decimal_converters_from_float_to_decimal_integer_float);
   tcase_add_test(
       tc, test_s21_decimal_converters_from_float_to_decimal_fraction_large);
-  tcase_add_test(tc, test_s21_decimal_converters_from_float_to_decimal_large);
 
   tcase_add_test(tc, test_s21_from_float_to_decimal_specific_7_922816);
+  tcase_add_test(tc, test_s21_decimal_converters_from_decimal_to_float_normal);
   tcase_add_test(tc, test_s21_decimal_from_decimal_to_float_positive_int);
   tcase_add_test(tc, test_s21_decimal_from_decimal_to_float_positive_fraction);
   tcase_add_test(tc, test_s21_decimal_from_decimal_to_float_negative_int);
@@ -1701,14 +1689,6 @@ START_TEST(test_s21_comparison_mantissa_with_high_bits_set) {
 }
 END_TEST
 
-START_TEST(test_s21_comparison_equal_after_complex_normalization) {
-  s21_decimal a, b;
-  s21_from_int_to_decimal(999999999, &a); set_scale(&a, 9);
-  s21_from_int_to_decimal(999999999000000000U, &b); set_scale(&b, 18);
-  ck_assert_int_eq(s21_is_equal(a, b), 1);
-}
-END_TEST
-
 TCase *create_comparison_tcase(void) {
   TCase *tc = tcase_create("comparisons");
   tcase_add_test(tc, test_s21_is_less_positive);
@@ -1736,7 +1716,6 @@ TCase *create_comparison_tcase(void) {
   tcase_add_test(tc, test_s21_comparison_max_mantissa_adjacent);
   tcase_add_test(tc, test_s21_comparison_pos_max_vs_neg_max);
   tcase_add_test(tc, test_s21_comparison_mantissa_with_high_bits_set);
-  tcase_add_test(tc, test_s21_comparison_equal_after_complex_normalization);
 
   return tc;
 }

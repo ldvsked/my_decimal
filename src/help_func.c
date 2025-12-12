@@ -20,17 +20,7 @@ void set_degree(s21_decimal *ch, int exp) {
   ch->bits[3] = (ch->bits[3] & 0x8000FFFF) | (exp << 16);
 }
 
-// void set_sign(s21_decimal *ch, const int sign) {
-//   if (sign) {
-//     ch->bits[3] |= (1 << 31);
-//   } else {
-//     ch->bits[3] &= ~(1 << 31);
-//   }
-// }
-
 int get_degree(const s21_decimal ch) { return (ch.bits[3] >> 16) & 255; }
-
-// int get_sign(const s21_decimal ch) { return ((ch.bits[3] >> 31) & 1); }
 
 int is_zero(const unsigned int bits[3]) {
   return bits[0] == 0 && bits[1] == 0 && bits[2] == 0;
