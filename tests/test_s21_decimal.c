@@ -1466,6 +1466,14 @@ START_TEST(test_s21_is_less_positive) {
 }
 END_TEST
 
+START_TEST(test_s21_is_less_first_greater) {
+  s21_decimal a, b;
+  s21_from_int_to_decimal(10, &a);
+  s21_from_int_to_decimal(-10, &b);
+  ck_assert_int_eq(s21_is_less(a, b), 0);
+}
+END_TEST
+
 START_TEST(test_s21_is_less_negative) {
   s21_decimal a, b;
   s21_from_int_to_decimal(-10, &a);
@@ -1694,6 +1702,7 @@ TCase *create_comparison_tcase(void) {
   tcase_add_test(tc, test_s21_is_less_mixed_signs);
   tcase_add_test(tc, test_s21_is_less_with_scale);
   tcase_add_test(tc, test_s21_is_less_extreme_values);
+  tcase_add_test(tc, test_s21_is_less_first_greater);
   tcase_add_test(tc, test_s21_is_greater_positive);
   tcase_add_test(tc, test_s21_is_greater_negative);
   tcase_add_test(tc, test_s21_is_greater_scale_normalization);
