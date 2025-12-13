@@ -1,6 +1,5 @@
 #include "s21_decimal.h"
 
-
 void set_degree(s21_decimal *ch, int exp) {
   ch->bits[3] = (ch->bits[3] & 0x8000FFFF) | (exp << 16);
 }
@@ -10,7 +9,6 @@ int get_degree(const s21_decimal ch) { return (ch.bits[3] >> 16) & 255; }
 int is_zero(const unsigned int bits[3]) {
   return bits[0] == 0 && bits[1] == 0 && bits[2] == 0;
 }
-
 
 s21_decimal normalize_decimal(s21_decimal num) {
   s21_decimal result = {{0}};

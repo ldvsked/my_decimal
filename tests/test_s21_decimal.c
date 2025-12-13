@@ -1,8 +1,9 @@
 #include <check.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <float.h>
+
 #include "../src/s21_decimal.h"
 
 START_TEST(test_s21_add_positive_numbers) {
@@ -161,43 +162,43 @@ START_TEST(test_s21_add_null_pointer) {
 END_TEST
 
 START_TEST(s21_add_normalize_overflow_case1) {
-    s21_decimal v1, v2, result;
-    set_decimal(&v1, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0);
-    set_decimal(&v2, 5, 0, 0, 2, 0);
+  s21_decimal v1, v2, result;
+  set_decimal(&v1, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0);
+  set_decimal(&v2, 5, 0, 0, 2, 0);
 
-    int status = s21_add(v1, v2, &result);
+  int status = s21_add(v1, v2, &result);
 
-    ck_assert_int_eq(status, 0);
-    ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
-    ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
-    ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
-    ck_assert_int_eq(get_scale(result), 1);
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
+  ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
+  ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
+  ck_assert_int_eq(get_scale(result), 1);
 }
 END_TEST
 
 START_TEST(s21_add_normalize_overflow_with_rounding) {
-    s21_decimal v1, v2, result;
-    set_decimal(&v1, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0);
-    set_decimal(&v2, 6, 0, 0, 2, 0);
+  s21_decimal v1, v2, result;
+  set_decimal(&v1, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0);
+  set_decimal(&v2, 6, 0, 0, 2, 0);
 
-    int status = s21_add(v1, v2, &result);
+  int status = s21_add(v1, v2, &result);
 
-    ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(status, 0);
 }
 END_TEST
 
 START_TEST(s21_add_normalize_overflow_reverse) {
-    s21_decimal v1, v2, result;
-    set_decimal(&v1, 5, 0, 0, 20, 0);
-    set_decimal(&v2, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 10, 0);
+  s21_decimal v1, v2, result;
+  set_decimal(&v1, 5, 0, 0, 20, 0);
+  set_decimal(&v2, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 10, 0);
 
-    int status = s21_add(v1, v2, &result);
+  int status = s21_add(v1, v2, &result);
 
-    ck_assert_int_eq(status, 0);
-    ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
-    ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
-    ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
-    ck_assert_int_eq(get_scale(result), 10);
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
+  ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
+  ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
+  ck_assert_int_eq(get_scale(result), 10);
 }
 END_TEST
 
@@ -1037,7 +1038,7 @@ START_TEST(test_s21_decimal_converters_from_float_to_decimal_fraction_large) {
 
   int result = s21_from_float_to_decimal(input_float, &my_decimal);
   ck_assert_int_eq(0, result);
-    ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
+  ck_assert_int_eq(0, uint_array_eq(my_decimal.bits, expected_decimal, 4));
 }
 END_TEST
 
@@ -1552,14 +1553,16 @@ END_TEST
 
 START_TEST(test_s21_is_less_with_scale) {
   s21_decimal a, b;
-  s21_from_int_to_decimal(123, &a); set_scale(&a, 2);
-  s21_from_int_to_decimal(456, &b); set_scale(&b, 2);
+  s21_from_int_to_decimal(123, &a);
+  set_scale(&a, 2);
+  s21_from_int_to_decimal(456, &b);
+  set_scale(&b, 2);
   ck_assert_int_eq(s21_is_less(a, b), 1);
 }
 END_TEST
 
 START_TEST(test_s21_is_less_extreme_values) {
-  s21_decimal a = {{0, 0, 0, 0x80000000}}; // -0
+  s21_decimal a = {{0, 0, 0, 0x80000000}};  // -0
   s21_decimal b = {{1, 0, 0, 0}};
   ck_assert_int_eq(s21_is_less(a, b), 1);
 }
@@ -1601,8 +1604,10 @@ END_TEST
 
 START_TEST(test_s21_is_equal_different_scale) {
   s21_decimal a, b;
-  s21_from_int_to_decimal(500, &a); set_scale(&a, 2);
-  s21_from_int_to_decimal(5, &b);   set_scale(&b, 0);
+  s21_from_int_to_decimal(500, &a);
+  set_scale(&a, 2);
+  s21_from_int_to_decimal(5, &b);
+  set_scale(&b, 0);
   ck_assert_int_eq(s21_is_equal(a, b), 1);
 }
 END_TEST
@@ -1729,29 +1734,29 @@ START_TEST(test_s21_comparison_mantissa_with_high_bits_set) {
 END_TEST
 
 START_TEST(test_s21_greater_pos_vs_neg) {
-    s21_decimal val1, val2;
-    s21_from_int_to_decimal(10, &val1);
-    s21_from_int_to_decimal(-5, &val2);
-    int result = s21_is_greater(val1, val2);
-    ck_assert_int_eq(result, 1);
+  s21_decimal val1, val2;
+  s21_from_int_to_decimal(10, &val1);
+  s21_from_int_to_decimal(-5, &val2);
+  int result = s21_is_greater(val1, val2);
+  ck_assert_int_eq(result, 1);
 }
 END_TEST
 
 START_TEST(test_s21_greater_pos_vs_zero) {
-    s21_decimal val1, val2;
-    s21_from_int_to_decimal(10, &val1);
-    s21_from_int_to_decimal(0, &val2);
-    int result = s21_is_greater(val1, val2);
-    ck_assert_int_eq(result, 1);
+  s21_decimal val1, val2;
+  s21_from_int_to_decimal(10, &val1);
+  s21_from_int_to_decimal(0, &val2);
+  int result = s21_is_greater(val1, val2);
+  ck_assert_int_eq(result, 1);
 }
 END_TEST
 
 START_TEST(test_s21_greater_neg_vs_zero) {
-    s21_decimal val1, val2;
-    s21_from_int_to_decimal(-10, &val1);
-    s21_from_int_to_decimal(0, &val2);
-    int result = s21_is_greater(val1, val2);
-    ck_assert_int_eq(result, 0);
+  s21_decimal val1, val2;
+  s21_from_int_to_decimal(-10, &val1);
+  s21_from_int_to_decimal(0, &val2);
+  int result = s21_is_greater(val1, val2);
+  ck_assert_int_eq(result, 0);
 }
 END_TEST
 

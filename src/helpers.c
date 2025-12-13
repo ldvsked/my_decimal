@@ -2,11 +2,12 @@
 
 void init_decimal(s21_decimal *value) { memset(value, 0, sizeof(s21_decimal)); }
 
-void set_decimal(s21_decimal *dst, unsigned int b0, unsigned int b1, unsigned int b2, int scale, int sign) {
-    dst->bits[0] = b0;
-    dst->bits[1] = b1;
-    dst->bits[2] = b2;
-    dst->bits[3] = (scale << 16) | (sign << 31);
+void set_decimal(s21_decimal *dst, unsigned int b0, unsigned int b1,
+                 unsigned int b2, int scale, int sign) {
+  dst->bits[0] = b0;
+  dst->bits[1] = b1;
+  dst->bits[2] = b2;
+  dst->bits[3] = (scale << 16) | (sign << 31);
 }
 
 int get_sign(s21_decimal value) { return (value.bits[3] >> 31) & 1; }
