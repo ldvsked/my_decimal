@@ -93,31 +93,6 @@ void big_to_decimal(s21_big_decimal src, s21_decimal *dst) {
   for (int i = 0; i < 3; i++) dst->bits[i] = src.bits[i];
 }
 
-int add_abs_with_scale(s21_decimal v1, s21_decimal v2, int scale, int sign,
-                       s21_decimal *result) {
-  s21_big_decimal bres;
-  s21_big_decimal b1 = decimal_to_big(v1);
-  s21_big_decimal b2 = decimal_to_big(v2);
-  add_big(b1, b2, &bres);
-  int cur_scale = scale;
-  while (is_overflow_big(bres) && cur_scale > 0) {
-    int rem = div_by_10_big(&bres);
-    bank_rounding(&bres, rem);
-    cur_scale--;
-  }
-
-  if (is_overflow_big(bres)) {
-    return sign ? S21_TOO_SMALL : S21_TOO_LARGE;
-  }
-
-  s21_decimal tmp;
-  big_to_decimal(bres, &tmp);
-  set_scale(&tmp, cur_scale);
-  set_sign(&tmp, sign);
-  *result = tmp;
-  return S21_OK;
-}
-
 int compare_bits(s21_decimal value_1, s21_decimal value_2) {
   for (int i = 2; i >= 0; i--) {
     unsigned int a = (unsigned int)value_1.bits[i];
@@ -139,12 +114,6 @@ int add_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
   return carry != 0;
 }
 
-int add_bits_temp(s21_decimal *result, s21_decimal one) {
-  s21_decimal temp;
-  memcpy(&temp, result, sizeof(s21_decimal));
-  return add_bits(&temp, temp, one);
-}
-
 int sub_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
   long long borrow = 0;
   for (int i = 0; i < 3; i++) {
@@ -159,13 +128,6 @@ int sub_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
     result->bits[i] = (int)diff;
   }
   return borrow != 0;
-}
-
-void set_decimal(s21_decimal *dst, int *bits, int scale, int sign) {
-  dst->bits[0] = bits[0];
-  dst->bits[1] = bits[1];
-  dst->bits[2] = bits[2];
-  dst->bits[3] = (scale << 16) | (sign << 31);
 }
 
 int get_bit(s21_decimal value, int index) {
@@ -230,12 +192,6 @@ int mul_by_10(s21_decimal *value) {
     rc = S21_TOO_LARGE;  // x10 = x2 + x8
 
   return rc;
-}
-
-int get_bit_big(s21_big_decimal dst, int index) {
-  int byte_index = index / 32;
-  int bit_index = index % 32;
-  return (dst.bits[byte_index] & (1U << bit_index)) != 0;
 }
 
 void add_big(s21_big_decimal value_1, s21_big_decimal value_2,
