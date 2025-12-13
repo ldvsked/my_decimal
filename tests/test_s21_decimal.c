@@ -59,6 +59,21 @@ START_TEST(test_s21_add_with_scale) {
 }
 END_TEST
 
+START_TEST(test_s21_add_different_scales) {
+  s21_decimal val1, val2, result;
+  s21_from_int_to_decimal(56, &val1);
+  set_scale(&val1, 1);
+  s21_from_int_to_decimal(1234, &val2);
+  set_scale(&val2, 2);
+
+  int status = s21_add(val1, val2, &result);
+
+  ck_assert_int_eq(status, 0);
+  ck_assert_int_eq(result.bits[0], 1794);
+  ck_assert_int_eq(get_scale(result), 2);
+}
+END_TEST
+
 START_TEST(test_s21_add_zero) {
   s21_decimal val1, val2, result;
   s21_from_int_to_decimal(100, &val1);
@@ -85,7 +100,7 @@ START_TEST(test_s21_add_max_int) {
 }
 END_TEST
 
-START_TEST(test_21_add_min_max) {
+START_TEST(test_s21_add_min_max) {
   s21_decimal max_dec = {{-1, -1, -1, 0}};
   s21_decimal min_dec = {{-1, -1, -1, 0x80000000}};
   s21_decimal result;
@@ -100,7 +115,7 @@ START_TEST(test_21_add_min_max) {
 }
 END_TEST
 
-START_TEST(test_21_add_min_min) {
+START_TEST(test_s21_add_min_min) {
   s21_decimal min_dec = {{-1, -1, -1, 0x80000000}};
   s21_decimal result;
 
@@ -110,7 +125,7 @@ START_TEST(test_21_add_min_min) {
 }
 END_TEST
 
-START_TEST(test_21_add_max_max) {
+START_TEST(test_s21_add_max_max) {
   s21_decimal max_dec = {{-1, -1, -1, 0}};
   s21_decimal result;
 
@@ -120,7 +135,7 @@ START_TEST(test_21_add_max_max) {
 }
 END_TEST
 
-START_TEST(test_21_add_max_min) {
+START_TEST(test_s21_add_max_min) {
   s21_decimal max_dec = {{-1, -1, -1, 0}};
   s21_decimal min_dec = {{-1, -1, -1, 0x80000000}};
   s21_decimal result;
@@ -135,13 +150,54 @@ START_TEST(test_21_add_max_min) {
 }
 END_TEST
 
-START_TEST(test_21_add_null_pointer) {
+START_TEST(test_s21_add_null_pointer) {
   s21_decimal val1 = {{0, 0, 0, 0}};
   s21_decimal val2 = {{0, 0, 0, 0}};
 
   int status = s21_add(val1, val2, NULL);
 
   ck_assert_int_eq(status, 4);
+}
+END_TEST
+
+START_TEST(s21_add_normalize_overflow_case1) {
+    s21_decimal v1, v2, result;
+    set_decimal(&v1, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0);
+    set_decimal(&v2, 5, 0, 0, 2, 0);
+
+    int status = s21_add(v1, v2, &result);
+
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
+    ck_assert_int_eq(get_scale(result), 1);
+}
+END_TEST
+
+START_TEST(s21_add_normalize_overflow_with_rounding) {
+    s21_decimal v1, v2, result;
+    set_decimal(&v1, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0);
+    set_decimal(&v2, 6, 0, 0, 2, 0);
+
+    int status = s21_add(v1, v2, &result);
+
+    ck_assert_int_eq(status, 0);
+}
+END_TEST
+
+START_TEST(s21_add_normalize_overflow_reverse) {
+    s21_decimal v1, v2, result;
+    set_decimal(&v1, 5, 0, 0, 20, 0);
+    set_decimal(&v2, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 10, 0);
+
+    int status = s21_add(v1, v2, &result);
+
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
+    ck_assert_int_eq(get_scale(result), 10);
 }
 END_TEST
 
@@ -560,11 +616,15 @@ TCase *create_arithmetic_tcase(void) {
   tcase_add_test(tc, test_s21_add_with_scale);
   tcase_add_test(tc, test_s21_add_zero);
   tcase_add_test(tc, test_s21_add_max_int);
-  tcase_add_test(tc, test_21_add_min_max);
-  tcase_add_test(tc, test_21_add_min_min);
-  tcase_add_test(tc, test_21_add_max_max);
-  tcase_add_test(tc, test_21_add_max_min);
-  tcase_add_test(tc, test_21_add_null_pointer);
+  tcase_add_test(tc, test_s21_add_min_max);
+  tcase_add_test(tc, test_s21_add_min_min);
+  tcase_add_test(tc, test_s21_add_max_max);
+  tcase_add_test(tc, test_s21_add_max_min);
+  tcase_add_test(tc, test_s21_add_null_pointer);
+  tcase_add_test(tc, test_s21_add_different_scales);
+  tcase_add_test(tc, s21_add_normalize_overflow_case1);
+  tcase_add_test(tc, s21_add_normalize_overflow_with_rounding);
+  tcase_add_test(tc, s21_add_normalize_overflow_reverse);
 
   tcase_add_test(tc, test_s21_sub_positive_numbers);
   tcase_add_test(tc, test_s21_sub_negative_numbers);

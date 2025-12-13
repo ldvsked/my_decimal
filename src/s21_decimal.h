@@ -31,6 +31,7 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 
 // helpers
 void init_decimal(s21_decimal *value);
+void set_decimal(s21_decimal *dst, unsigned int b0, unsigned int b1, unsigned int b2, int scale, int sign);
 int get_sign(s21_decimal value);
 void set_sign(s21_decimal *value, int sign);
 int get_scale(s21_decimal value);
