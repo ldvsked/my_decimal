@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <float.h> //у меня без этого не видит переменную FLT_MAX в 872 строке
+#include <float.h>
 #include "../src/s21_decimal.h"
 
 START_TEST(test_s21_add_positive_numbers) {
@@ -195,8 +195,6 @@ START_TEST(test_s21_sub_with_scale) {
   ck_assert_int_eq(status, 0);
   ck_assert_int_eq(result.bits[0], 100);
   ck_assert_int_eq(get_scale(result), 1);
-  // ck_assert_int_eq(result.bits[0], 10);
-  // ck_assert_int_eq(get_scale(result), 0);
 }
 END_TEST
 
@@ -1007,16 +1005,6 @@ START_TEST(test_s21_decimal_converters_from_decimal_to_float_normal) {
 }
 END_TEST
 
-// 1. Ноль
-// START_TEST(test_s21_decimal_from_decimal_to_float_zero) {
-//   s21_decimal input = {.bits = {0, 0, 0, 0}};
-//   float expected = 0.0f;
-//   float result;
-//   ck_assert_int_eq(0, s21_from_decimal_to_float(input, &result));
-//   ck_assert_float_eq_tol(expected, result, 1e-6);
-// }
-// END_TEST
-
 // 2. Положительное целое
 START_TEST(test_s21_decimal_from_decimal_to_float_positive_int) {
   s21_decimal input = {.bits = {12345, 0, 0, 0}};  // scale = 0
@@ -1672,6 +1660,33 @@ START_TEST(test_s21_comparison_mantissa_with_high_bits_set) {
 }
 END_TEST
 
+START_TEST(test_s21_greater_pos_vs_neg) {
+    s21_decimal val1, val2;
+    s21_from_int_to_decimal(10, &val1);
+    s21_from_int_to_decimal(-5, &val2);
+    int result = s21_is_greater(val1, val2);
+    ck_assert_int_eq(result, 1);
+}
+END_TEST
+
+START_TEST(test_s21_greater_pos_vs_zero) {
+    s21_decimal val1, val2;
+    s21_from_int_to_decimal(10, &val1);
+    s21_from_int_to_decimal(0, &val2);
+    int result = s21_is_greater(val1, val2);
+    ck_assert_int_eq(result, 1);
+}
+END_TEST
+
+START_TEST(test_s21_greater_neg_vs_zero) {
+    s21_decimal val1, val2;
+    s21_from_int_to_decimal(-10, &val1);
+    s21_from_int_to_decimal(0, &val2);
+    int result = s21_is_greater(val1, val2);
+    ck_assert_int_eq(result, 0);
+}
+END_TEST
+
 TCase *create_comparison_tcase(void) {
   TCase *tc = tcase_create("comparisons");
   tcase_add_test(tc, test_s21_is_less_positive);
@@ -1682,6 +1697,9 @@ TCase *create_comparison_tcase(void) {
   tcase_add_test(tc, test_s21_is_greater_positive);
   tcase_add_test(tc, test_s21_is_greater_negative);
   tcase_add_test(tc, test_s21_is_greater_scale_normalization);
+  tcase_add_test(tc, test_s21_greater_pos_vs_neg);
+  tcase_add_test(tc, test_s21_greater_pos_vs_zero);
+  tcase_add_test(tc, test_s21_greater_neg_vs_zero);
   tcase_add_test(tc, test_s21_is_equal_same_value);
   tcase_add_test(tc, test_s21_is_equal_different_scale);
   tcase_add_test(tc, test_s21_is_equal_negative_zero);
