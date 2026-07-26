@@ -1,17 +1,17 @@
-#include "s21_decimal.h"
+#include "my_decimal.h"
 
-void set_degree(s21_decimal *ch, int exp) {
+void set_degree(my_decimal *ch, int exp) {
   ch->bits[3] = (ch->bits[3] & 0x8000FFFF) | (exp << 16);
 }
 
-int get_degree(const s21_decimal ch) { return (ch.bits[3] >> 16) & 255; }
+int get_degree(const my_decimal ch) { return (ch.bits[3] >> 16) & 255; }
 
 int is_zero(const unsigned int bits[3]) {
   return bits[0] == 0 && bits[1] == 0 && bits[2] == 0;
 }
 
-s21_decimal normalize_decimal(s21_decimal num) {
-  s21_decimal result = {{0}};
+my_decimal normalize_decimal(my_decimal num) {
+  my_decimal result = {{0}};
 
   if (is_zero(num.bits)) {
   } else {
@@ -65,8 +65,8 @@ int multiply_by_10(unsigned int value[3]) {
 }
 
 // приведение к общему масштабу
-int align_decimal_scales(s21_decimal value_1, s21_decimal value_2,
-                         s21_decimal *out_1, s21_decimal *out_2) {
+int align_decimal_scales(my_decimal value_1, my_decimal value_2,
+                         my_decimal *out_1, my_decimal *out_2) {
   int res = 1;
   *out_1 = value_1;
   *out_2 = value_2;
@@ -75,7 +75,7 @@ int align_decimal_scales(s21_decimal value_1, s21_decimal value_2,
 
   if (scale1 != scale2) {
     int diff = (scale1 > scale2) ? (scale1 - scale2) : (scale2 - scale1);
-    s21_decimal *to_scale = (scale1 < scale2) ? out_1 : out_2;
+    my_decimal *to_scale = (scale1 < scale2) ? out_1 : out_2;
     for (int i = 0; i < diff && res; i++) {
       if (!multiply_by_10(to_scale->bits)) {
         res = 0;

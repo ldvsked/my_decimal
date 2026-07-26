@@ -1,8 +1,8 @@
-#include "s21_decimal.h"
+#include "my_decimal.h"
 
-void init_decimal(s21_decimal *value) { memset(value, 0, sizeof(s21_decimal)); }
+void init_decimal(my_decimal *value) { memset(value, 0, sizeof(my_decimal)); }
 
-void set_decimal(s21_decimal *dst, unsigned int b0, unsigned int b1,
+void set_decimal(my_decimal *dst, unsigned int b0, unsigned int b1,
                  unsigned int b2, int scale, int sign) {
   dst->bits[0] = b0;
   dst->bits[1] = b1;
@@ -10,9 +10,9 @@ void set_decimal(s21_decimal *dst, unsigned int b0, unsigned int b1,
   dst->bits[3] = (scale << 16) | (sign << 31);
 }
 
-int get_sign(s21_decimal value) { return (value.bits[3] >> 31) & 1; }
+int get_sign(my_decimal value) { return (value.bits[3] >> 31) & 1; }
 
-void set_sign(s21_decimal *value, int sign) {
+void set_sign(my_decimal *value, int sign) {
   if (sign) {
     value->bits[3] |= (1 << 31);
   } else {
@@ -20,20 +20,20 @@ void set_sign(s21_decimal *value, int sign) {
   }
 }
 
-int get_scale(s21_decimal value) { return (value.bits[3] >> 16) & 0xFF; }
+int get_scale(my_decimal value) { return (value.bits[3] >> 16) & 0xFF; }
 
-void set_scale(s21_decimal *value, int scale) {
+void set_scale(my_decimal *value, int scale) {
   int sign = get_sign(*value);
   value->bits[3] = (scale << 16);
   set_sign(value, sign);
 }
 
-void normalize_scale(s21_decimal *value_1, s21_decimal *value_2) {
+void normalize_scale(my_decimal *value_1, my_decimal *value_2) {
   int scale1 = get_scale(*value_1);
   int scale2 = get_scale(*value_2);
   if (scale1 == scale2) return;
   if (scale1 < scale2) {
-    s21_decimal temp = *value_1;
+    my_decimal temp = *value_1;
     int diff = scale2 - scale1;
     int overflow = 0;
     for (int i = 0; i < diff; i++) {
@@ -46,7 +46,7 @@ void normalize_scale(s21_decimal *value_1, s21_decimal *value_2) {
       *value_1 = temp;
       set_scale(value_1, scale2);
     } else {
-      s21_big_decimal big_v2 = decimal_to_big(*value_2);
+      my_big_decimal big_v2 = decimal_to_big(*value_2);
       int diff_reverse = scale2 - scale1;
       int remainder = 0;
       for (int i = 0; i < diff_reverse; i++) {
@@ -62,7 +62,7 @@ void normalize_scale(s21_decimal *value_1, s21_decimal *value_2) {
       }
     }
   } else {
-    s21_decimal temp = *value_2;
+    my_decimal temp = *value_2;
     int diff = scale1 - scale2;
     int overflow = 0;
     for (int i = 0; i < diff; i++) {
@@ -75,7 +75,7 @@ void normalize_scale(s21_decimal *value_1, s21_decimal *value_2) {
       *value_2 = temp;
       set_scale(value_2, scale1);
     } else {
-      s21_big_decimal big_v1 = decimal_to_big(*value_1);
+      my_big_decimal big_v1 = decimal_to_big(*value_1);
       int diff_reverse = scale1 - scale2;
       int remainder = 0;
       for (int i = 0; i < diff_reverse; i++) {
@@ -90,18 +90,18 @@ void normalize_scale(s21_decimal *value_1, s21_decimal *value_2) {
   }
 }
 
-s21_big_decimal decimal_to_big(s21_decimal value) {
-  s21_big_decimal res = {0};
+my_big_decimal decimal_to_big(my_decimal value) {
+  my_big_decimal res = {0};
   for (int i = 0; i < 3; i++) res.bits[i] = value.bits[i];
   return res;
 }
 
-void big_to_decimal(s21_big_decimal src, s21_decimal *dst) {
+void big_to_decimal(my_big_decimal src, my_decimal *dst) {
   init_decimal(dst);
   for (int i = 0; i < 3; i++) dst->bits[i] = src.bits[i];
 }
 
-int compare_bits(s21_decimal value_1, s21_decimal value_2) {
+int compare_bits(my_decimal value_1, my_decimal value_2) {
   for (int i = 2; i >= 0; i--) {
     unsigned int a = (unsigned int)value_1.bits[i];
     unsigned int b = (unsigned int)value_2.bits[i];
@@ -111,7 +111,7 @@ int compare_bits(s21_decimal value_1, s21_decimal value_2) {
   return 0;
 }
 
-int add_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
+int add_bits(my_decimal *result, my_decimal value_1, my_decimal value_2) {
   unsigned long long carry = 0;
   for (int i = 0; i < 3; i++) {
     unsigned long long sum = (unsigned long long)value_1.bits[i] +
@@ -122,7 +122,7 @@ int add_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
   return carry != 0;
 }
 
-int sub_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
+int sub_bits(my_decimal *result, my_decimal value_1, my_decimal value_2) {
   long long borrow = 0;
   for (int i = 0; i < 3; i++) {
     long long diff = (long long)(unsigned int)value_1.bits[i] -
@@ -138,14 +138,14 @@ int sub_bits(s21_decimal *result, s21_decimal value_1, s21_decimal value_2) {
   return borrow != 0;
 }
 
-int get_bit(s21_decimal value, int index) {
+int get_bit(my_decimal value, int index) {
   int array_index = index / 32;
   int bit_index = index % 32;
   return (value.bits[array_index] >> bit_index) & 1;
 }
 
 // сдвигаем мантиссу влево на 1 бит
-int shift_left(s21_decimal *value) {
+int shift_left(my_decimal *value) {
   int carry = 0;
   for (int i = 0; i < 3; i++) {
     unsigned long long temp = (unsigned long long)value->bits[i] << 1;
@@ -156,12 +156,12 @@ int shift_left(s21_decimal *value) {
   return carry;
 }
 
-int is_full_value_zero(s21_decimal value) {
+int is_full_value_zero(my_decimal value) {
   return value.bits[0] == 0 && value.bits[1] == 0 && value.bits[2] == 0;
 }
 
-void div_integer_mantissa(s21_decimal dividend, s21_decimal divisor,
-                          s21_decimal *quotient, s21_decimal *remainder) {
+void div_integer_mantissa(my_decimal dividend, my_decimal divisor,
+                          my_decimal *quotient, my_decimal *remainder) {
   init_decimal(quotient);
   init_decimal(remainder);
 
@@ -181,18 +181,18 @@ void div_integer_mantissa(s21_decimal dividend, s21_decimal divisor,
   }
 }
 
-int mul_by_10(s21_decimal *value) {
-  s21_decimal temp = *value;
+int mul_by_10(my_decimal *value) {
+  my_decimal temp = *value;
 
   // x * 10 = (x * 8) + (x * 2) = (x << 3) + (x << 1)
-  s21_decimal ten;
+  my_decimal ten;
   init_decimal(&ten);
   ten.bits[0] = 10;
   return_code rc = S21_OK;
-  s21_decimal x2 = temp;
+  my_decimal x2 = temp;
   if (shift_left(&x2)) rc = S21_TOO_LARGE;
 
-  s21_decimal x8 = x2;
+  my_decimal x8 = x2;
   if (rc == S21_OK && shift_left(&x8)) rc = S21_TOO_LARGE;
   if (rc == S21_OK && shift_left(&x8)) rc = S21_TOO_LARGE;
 
@@ -202,8 +202,8 @@ int mul_by_10(s21_decimal *value) {
   return rc;
 }
 
-void add_big(s21_big_decimal value_1, s21_big_decimal value_2,
-             s21_big_decimal *result) {
+void add_big(my_big_decimal value_1, my_big_decimal value_2,
+             my_big_decimal *result) {
   unsigned long long carry = 0;
   for (int i = 0; i < 7; i++) {
     unsigned long long sum = (unsigned long long)value_1.bits[i] +
@@ -213,7 +213,7 @@ void add_big(s21_big_decimal value_1, s21_big_decimal value_2,
   }
 }
 
-void shift_left_big(s21_big_decimal *dst, int shift) {
+void shift_left_big(my_big_decimal *dst, int shift) {
   if (shift == 0) return;
   int words_shift = shift / 32;
   int bits_shift = shift % 32;
@@ -239,15 +239,15 @@ void shift_left_big(s21_big_decimal *dst, int shift) {
 }
 
 // результат может занимать до 192 бит
-s21_big_decimal mul_mantissa(s21_decimal value_1, s21_decimal value_2) {
-  s21_big_decimal res = {0};
-  s21_big_decimal v1 = {0};
+my_big_decimal mul_mantissa(my_decimal value_1, my_decimal value_2) {
+  my_big_decimal res = {0};
+  my_big_decimal v1 = {0};
 
   for (int i = 0; i < 3; i++) v1.bits[i] = value_1.bits[i];
 
   for (int i = 0; i < 96; i++) {
     if (get_bit(value_2, i)) {
-      s21_big_decimal temp = v1;
+      my_big_decimal temp = v1;
       shift_left_big(&temp, i);
       add_big(res, temp, &res);
     }
@@ -255,7 +255,7 @@ s21_big_decimal mul_mantissa(s21_decimal value_1, s21_decimal value_2) {
   return res;
 }
 
-int div_by_10_big(s21_big_decimal *value) {
+int div_by_10_big(my_big_decimal *value) {
   unsigned long long remainder = 0;
   for (int i = 6; i >= 0; i--) {
     unsigned long long current = value->bits[i] + (remainder << 32);
@@ -265,11 +265,11 @@ int div_by_10_big(s21_big_decimal *value) {
   return (int)remainder;
 }
 
-int is_overflow_big(s21_big_decimal value) {
+int is_overflow_big(my_big_decimal value) {
   return (value.bits[3] | value.bits[4] | value.bits[5] | value.bits[6]) != 0;
 }
 
-void add_one_big(s21_big_decimal *value) {
+void add_one_big(my_big_decimal *value) {
   unsigned long long carry = 1;
   for (int i = 0; i < 7 && carry; i++) {
     unsigned long long sum = (unsigned long long)value->bits[i] + carry;
@@ -278,7 +278,7 @@ void add_one_big(s21_big_decimal *value) {
   }
 }
 
-void bank_rounding(s21_big_decimal *value, int remainder) {
+void bank_rounding(my_big_decimal *value, int remainder) {
   if (remainder > 5 || (remainder == 5 && (value->bits[0] & 1))) {
     add_one_big(value);
   }
